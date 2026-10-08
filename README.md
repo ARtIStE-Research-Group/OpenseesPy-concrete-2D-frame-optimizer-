@@ -1,3 +1,5 @@
+https://github.com/ARtIStE-Research-Group/OpenseesPy-concrete-2D-frame-optimizer-/blob/main/Manual_Polito_Work_Station_beta_03_EN.pdf
+
 # OpenseesPy-concrete-2D-frame-optimizer-
 OpenSeesPy-based framework for earthquake assessment of existing RC structures (frames) and optimization of retrofits (Eurocode checks, drift/member performance, RC shear wall placement, concrete jacketing, cost evaluation, automated reporting)
 # Seismic Assessment and Retrofit Optimization of RC Frames with OpenSeesPy
