@@ -1,0 +1,25 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Apr 19 21:56:02 2026
+
+@author: arman
+"""
+
+DOF_PER_NODE = 3
+
+GAMMA_G_UNF = 1.35
+GAMMA_Q     = 1.50
+PSI_Q0, PSI_Q1, PSI_Q2 = 0.7, 0.5, 0.3
+PSI_W0, PSI_W1, PSI_W2 = 0.6, 0.2, 0.0
+
+DEFAULT_RC_COVER_MM = 50.0
+
+DEFAULT_GAMMA_C  = 1.50
+DEFAULT_GAMMA_S  = 1.15
+DEFAULT_ALPHA_CC = 0.85
+
+BAND_GREEN  = 0.70
+BAND_YELLOW = 0.85
+BAND_ORANGE = 1.00
+
+G_STD = 9.81
