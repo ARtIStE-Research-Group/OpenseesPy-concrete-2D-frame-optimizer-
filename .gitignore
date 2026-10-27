@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.bak
+*.bak*
+
+# Editors / OS
+.spyproject/
+.ipynb_checkpoints/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+~$*
+
+# ARCOPY run folders and outputs written next to main.py
+# (the reference results in examples/ are kept)
+/run_*/
+/*/_checkpoints/
+/*.csv
+/*.xlsx
+/*.docx
+/*.png
+!/arcopy_logo.png
+!/Logo_PoliTo_dal_2021_blu.png

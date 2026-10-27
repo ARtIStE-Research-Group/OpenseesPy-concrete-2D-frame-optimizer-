@@ -1,0 +1,20 @@
+# Conda environment for ARCOPY v1.2.0
+#   conda env create -f environment.yml
+#   conda activate arcopy
+name: arcopy
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - matplotlib
+  - pillow
+  - openpyxl
+  - xlsxwriter
+  - python-docx
+  - optuna
+  - spyder-kernels   # only needed to run ARCOPY from Spyder
+  - pip:
+      - openseespy

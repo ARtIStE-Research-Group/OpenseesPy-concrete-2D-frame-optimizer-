@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+type: software
+title: "ARCOPY: seismic assessment and cost-based retrofit optimization of RC frames with OpenSeesPy"
+version: "1.2.0"
+date-released: "2026-10-27"
+license: MIT
+authors:
+  - family-names: Marano
+    given-names: Giuseppe Carlo
+    orcid: "https://orcid.org/0000-0001-8472-2956"
+    affiliation: "Department of Structural, Building and Geotechnical Engineering (DISEG), Politecnico di Torino"
+  - family-names: Hajiha
+    given-names: Arman
+    affiliation: "Department of Structural, Building and Geotechnical Engineering (DISEG), Politecnico di Torino"
+repository-code: "https://github.com/ArtISte-Research-Group/OpenseesPy-concrete-2D-frame-optimizer-"
+url: "https://github.com/ArtISte-Research-Group/OpenseesPy-concrete-2D-frame-optimizer-"
+# After the Zenodo release, add the concept DOI (it resolves to the latest version):
+# doi: "10.5281/zenodo.XXXXXXX"
+abstract: >-
+  ARCOPY is an OpenSeesPy framework for the seismic assessment and cost-based
+  retrofit optimization of existing two-dimensional reinforced concrete frames.
+  It builds the frame model interactively, runs static, modal, EC8 response
+  spectrum and linear time-history analyses, checks members to EN 1992-1-1 and
+  EN 1998-3, and searches complete retrofit strategies (new RC shear walls plus
+  iterative concrete jacketing) for the minimum total cost. The shear-wall
+  layout can be searched by drift screening or by Bayesian optimization
+  (Tree-structured Parzen Estimator, Optuna). Results are written to CSV/Excel
+  files and to a Word retrofit report.
+keywords:
+  - OpenSeesPy
+  - seismic assessment
+  - seismic retrofit
+  - reinforced concrete frames
+  - Eurocode 8
+  - shear walls
+  - concrete jacketing
+  - cost optimization
+  - Bayesian optimization

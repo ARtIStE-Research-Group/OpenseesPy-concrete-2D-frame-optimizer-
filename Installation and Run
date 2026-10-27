@@ -1,11 +1,35 @@
-Creating an isolated Python environment is recommended.
-(#For exaample:
-conda create -n retrofit-opensees python=3.11
-conda activate retrofit-opensees)
+Creating an isolated Python environment is recommended (Python 3.10 or newer).
 
-A typical environment requires packages such as:
-#pip install openseespy numpy pandas matplotlib scipy openpyxl xlsxwriter python-docx
+With conda, using the file in this repository:
+    conda env create -f environment.yml
+    conda activate arcopy
 
-The current interface is interactive. The program requests the required structural, material, loading, analysis, and optimization parameters during execution.
+Or create it by hand:
+    conda create -n arcopy python=3.11
+    conda activate arcopy
+    pip install -r requirements.txt
 
-The user may choose which analyses to perform and may skip optional dynamic or reporting stages.
+Required packages (requirements.txt):
+    openseespy numpy pandas matplotlib pillow openpyxl xlsxwriter python-docx optuna
+
+optuna is only needed for the smart (Bayesian) shear-wall search. In a Spyder
+console it can be installed with:  %pip install optuna   (then restart the kernel)
+
+Run:
+    python main.py
+or open main.py in Spyder and press Run.
+
+The interface is interactive. The program requests the required structural,
+material, loading, analysis, and optimization parameters during execution.
+The user may choose which analyses to perform and may skip optional dynamic or
+reporting stages.
+
+Each run is saved in a folder named after the run. After every step the state is
+saved in <run>/_checkpoints, so a run can be continued, or restarted from any
+earlier step, without typing the model again.
+
+Example (4-storey, 5-bay frame, all answers given in a file):
+    python main.py < examples/four_storey_frame/inputs.txt
+
+Verification against hand calculations:
+    python tests/run_verification.py
