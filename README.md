@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](requirements.txt)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22812754.svg)](https://doi.org/10.5281/zenodo.22812754)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23686655.svg)](https://doi.org/10.5281/zenodo.23686655)
 
 OpenSeesPy-based framework for the earthquake assessment of existing reinforced concrete (RC) frames and the optimization of their retrofit: Eurocode checks, drift and member performance, RC shear-wall placement, concrete jacketing, cost evaluation and automated reporting.
 
@@ -344,7 +344,9 @@ See also [Disclaimer](Disclaimer) and [Scope and Limitations](Scope%20and%20Limi
 
 If you use ARCOPY in research or professional work, please cite the software release (see [CITATION.cff](CITATION.cff) and [Citation](Citation)):
 
-> Marano, G. C., Hajiha, A. (2026). ARCOPY: seismic assessment and cost-based retrofit optimization of RC frames with OpenSeesPy (v1.2.0). ARTISTE Research Group, Politecnico di Torino. Zenodo. https://doi.org/10.5281/zenodo.22812754
+> Marano, G. C., Hajiha, A. (2026). ARCOPY: seismic assessment and cost-based retrofit optimization of RC frames with OpenSeesPy (v1.2.0). ARTISTE Research Group, Politecnico di Torino. Zenodo. https://doi.org/10.5281/zenodo.23686655
+
+Previous version (v1.0.0): https://doi.org/10.5281/zenodo.22812754
 
 # Authors
 

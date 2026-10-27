@@ -15,8 +15,7 @@ authors:
     affiliation: "Department of Structural, Building and Geotechnical Engineering (DISEG), Politecnico di Torino"
 repository-code: "https://github.com/ArtISte-Research-Group/OpenseesPy-concrete-2D-frame-optimizer-"
 url: "https://github.com/ArtISte-Research-Group/OpenseesPy-concrete-2D-frame-optimizer-"
-# After the Zenodo release, add the concept DOI (it resolves to the latest version):
-# doi: "10.5281/zenodo.XXXXXXX"
+doi: "10.5281/zenodo.23686655"
 abstract: >-
   ARCOPY is an OpenSeesPy framework for the seismic assessment and cost-based
   retrofit optimization of existing two-dimensional reinforced concrete frames.
