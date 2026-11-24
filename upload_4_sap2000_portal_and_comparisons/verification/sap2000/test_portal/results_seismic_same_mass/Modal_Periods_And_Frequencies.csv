@@ -1,0 +1,3 @@
+OutputCase,StepType,StepNum,Period,Frequency,CircFreq,Eigenvalue
+MODAL,Mode,1,0.819299,1.2206,7.669,58.813
+MODAL,Mode,2,0.283436,3.5281,22.168,491.42

@@ -1,0 +1,330 @@
+===== TestPortal_static (I33 factor 1.0) =====
+ok    InitializeNewModel -> 0
+ok    NewBlank -> 0
+ok    SetMaterial -> 0
+ok    SetMPIsotropic -> 0
+ok    SetWeightAndMass -> 0
+ok    SetRectangle BEAM_500x300 -> 0
+ok    SetModifiers BEAM_500x300 -> 0
+ok    SetRectangle COL_300x300 -> 0
+ok    SetModifiers COL_300x300 -> 0
+ok    AddCartesian 1 -> 0
+ok    SetRestraint 1 -> 0
+ok    AddCartesian 2 -> 0
+ok    SetRestraint 2 -> 0
+ok    AddCartesian 3 -> 0
+ok    SetRestraint 3 -> 0
+ok    AddCartesian 4 -> 0
+ok    AddCartesian 5 -> 0
+ok    AddCartesian 6 -> 0
+ok    AddCartesian 7 -> 0
+ok    AddCartesian 8 -> 0
+ok    AddCartesian 9 -> 0
+ok    AddByPoint 1 -> 0
+ok    SetOutputStations 1 -> 0
+ok    AddByPoint 2 -> 0
+ok    SetOutputStations 2 -> 0
+ok    AddByPoint 3 -> 0
+ok    SetOutputStations 3 -> 0
+ok    AddByPoint 4 -> 0
+ok    SetOutputStations 4 -> 0
+ok    AddByPoint 5 -> 0
+ok    SetOutputStations 5 -> 0
+ok    AddByPoint 6 -> 0
+ok    SetOutputStations 6 -> 0
+ok    AddByPoint 7 -> 0
+ok    SetOutputStations 7 -> 0
+ok    AddByPoint 8 -> 0
+ok    SetOutputStations 8 -> 0
+ok    AddByPoint 9 -> 0
+ok    SetOutputStations 9 -> 0
+ok    AddByPoint 10 -> 0
+ok    SetOutputStations 10 -> 0
+ok    SetActiveDOF -> 0
+ok    ChangeName DEAD->SW (pattern) -> 0
+ok    ChangeName DEAD->SW (case) -> 0
+ok    Add G -> 0
+ok    Add live01 -> 0
+ok    Add live02 -> 0
+ok    Add live03 -> 0
+ok    Add live04 -> 0
+ok    Add W+ -> 0
+ok    Add W- -> 0
+ok    Load G e7 -> 0
+ok    Load G e8 -> 0
+ok    Load G e9 -> 0
+ok    Load G e10 -> 0
+ok    Load W+ e1 -> 0
+ok    Load W+ e4 -> 0
+ok    Load W- e3 -> 0
+ok    Load W- e6 -> 0
+ok    Load live01 e7 -> 0
+ok    Load live02 e8 -> 0
+ok    Load live03 e9 -> 0
+ok    Load live04 e10 -> 0
+ok    Combo CROWD -> 0
+ok    Combo CROWD + live01 -> 0
+ok    Combo CROWD + live02 -> 0
+ok    Combo CROWD + live03 -> 0
+ok    Combo CROWD + live04 -> 0
+ok    Combo CROWD_SEISM -> 0
+ok    Combo CROWD_SEISM + live01 -> 0
+ok    Combo CROWD_SEISM + live02 -> 0
+ok    Combo CROWD_SEISM + live03 -> 0
+ok    Combo CROWD_SEISM + live04 -> 0
+ok    Combo WIND -> 0
+ok    Combo WIND + W+ -> 0
+ok    Combo WIND + W- -> 0
+ok    Combo ULS_Q_leading_W+ -> 0
+ok    Combo ULS_Q_leading_W+ + SW -> 0
+ok    Combo ULS_Q_leading_W+ + G -> 0
+ok    Combo ULS_Q_leading_W+ + CROWD -> 0
+ok    Combo ULS_Q_leading_W+ + W+ -> 0
+ok    Combo ULS_Q_leading_W- -> 0
+ok    Combo ULS_Q_leading_W- + SW -> 0
+ok    Combo ULS_Q_leading_W- + G -> 0
+ok    Combo ULS_Q_leading_W- + CROWD -> 0
+ok    Combo ULS_Q_leading_W- + W- -> 0
+ok    Combo ULS_W+_leading -> 0
+ok    Combo ULS_W+_leading + SW -> 0
+ok    Combo ULS_W+_leading + G -> 0
+ok    Combo ULS_W+_leading + CROWD -> 0
+ok    Combo ULS_W+_leading + W+ -> 0
+ok    Combo ULS_W-_leading -> 0
+ok    Combo ULS_W-_leading + SW -> 0
+ok    Combo ULS_W-_leading + G -> 0
+ok    Combo ULS_W-_leading + CROWD -> 0
+ok    Combo ULS_W-_leading + W- -> 0
+ok    Combo SLS_char_W+ -> 0
+ok    Combo SLS_char_W+ + SW -> 0
+ok    Combo SLS_char_W+ + G -> 0
+ok    Combo SLS_char_W+ + CROWD -> 0
+ok    Combo SLS_char_W+ + W+ -> 0
+ok    Combo SLS_char_W- -> 0
+ok    Combo SLS_char_W- + SW -> 0
+ok    Combo SLS_char_W- + G -> 0
+ok    Combo SLS_char_W- + CROWD -> 0
+ok    Combo SLS_char_W- + W- -> 0
+ok    Combo SLS_quasi_perm -> 0
+ok    Combo SLS_quasi_perm + SW -> 0
+ok    Combo SLS_quasi_perm + G -> 0
+ok    Combo SLS_quasi_perm + live01 -> 0
+ok    Combo SLS_quasi_perm + live02 -> 0
+ok    Combo SLS_quasi_perm + live03 -> 0
+ok    Combo SLS_quasi_perm + live04 -> 0
+ok    SetMassSource -> 0
+ok    SetNumberModes -> 0
+ok    FuncRS.SetUser -> 0
+ok    RS SetCase -> 0
+ok    RS SetModalCase -> 0
+ok    RS SetModalComb_1 -> 0
+ok    RS SetDirComb -> 0
+ok    RS SetLoads -> 0
+ok    RS SetDampConstant -> 0
+ok    Save -> 0
+ok    SetRunCaseFlag all -> 0
+ok    RunAnalysis -> 0
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Joint Displacements -> 0
+      Joint Displacements: 234 rows
+ok    Table Joint Reactions -> 0
+      Joint Reactions: 78 rows
+ok    Table Element Forces - Frames -> 0
+      Element Forces - Frames: 2860 rows
+ok    Table Base Reactions -> 0
+      Base Reactions: 26 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Active Degrees of Freedom -> 0
+      Active Degrees of Freedom: 1 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Frame Section Properties 01 - General -> 0
+      Frame Section Properties 01 - General: 2 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Frame Property Modifiers -> 0
+      Frame Property Modifiers: 1 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Combination Definitions -> 0
+      Combination Definitions: 40 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Mass Source -> 0
+      Mass Source: 6 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Function - Response Spectrum - User -> 0
+      Function - Response Spectrum - User: 85 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+FAIL  Table Frame Loads - Distributed -> 1
+===== TestPortal_seismic (I33 factor 0.5) =====
+ok    InitializeNewModel -> 0
+ok    NewBlank -> 0
+ok    SetMaterial -> 0
+ok    SetMPIsotropic -> 0
+ok    SetWeightAndMass -> 0
+ok    SetRectangle BEAM_500x300 -> 0
+ok    SetModifiers BEAM_500x300 -> 0
+ok    SetRectangle COL_300x300 -> 0
+ok    SetModifiers COL_300x300 -> 0
+ok    AddCartesian 1 -> 0
+ok    SetRestraint 1 -> 0
+ok    AddCartesian 2 -> 0
+ok    SetRestraint 2 -> 0
+ok    AddCartesian 3 -> 0
+ok    SetRestraint 3 -> 0
+ok    AddCartesian 4 -> 0
+ok    AddCartesian 5 -> 0
+ok    AddCartesian 6 -> 0
+ok    AddCartesian 7 -> 0
+ok    AddCartesian 8 -> 0
+ok    AddCartesian 9 -> 0
+ok    AddByPoint 1 -> 0
+ok    SetOutputStations 1 -> 0
+ok    AddByPoint 2 -> 0
+ok    SetOutputStations 2 -> 0
+ok    AddByPoint 3 -> 0
+ok    SetOutputStations 3 -> 0
+ok    AddByPoint 4 -> 0
+ok    SetOutputStations 4 -> 0
+ok    AddByPoint 5 -> 0
+ok    SetOutputStations 5 -> 0
+ok    AddByPoint 6 -> 0
+ok    SetOutputStations 6 -> 0
+ok    AddByPoint 7 -> 0
+ok    SetOutputStations 7 -> 0
+ok    AddByPoint 8 -> 0
+ok    SetOutputStations 8 -> 0
+ok    AddByPoint 9 -> 0
+ok    SetOutputStations 9 -> 0
+ok    AddByPoint 10 -> 0
+ok    SetOutputStations 10 -> 0
+ok    SetActiveDOF -> 0
+ok    ChangeName DEAD->SW (pattern) -> 0
+ok    ChangeName DEAD->SW (case) -> 0
+ok    Add G -> 0
+ok    Add live01 -> 0
+ok    Add live02 -> 0
+ok    Add live03 -> 0
+ok    Add live04 -> 0
+ok    Add W+ -> 0
+ok    Add W- -> 0
+ok    Load G e7 -> 0
+ok    Load G e8 -> 0
+ok    Load G e9 -> 0
+ok    Load G e10 -> 0
+ok    Load W+ e1 -> 0
+ok    Load W+ e4 -> 0
+ok    Load W- e3 -> 0
+ok    Load W- e6 -> 0
+ok    Load live01 e7 -> 0
+ok    Load live02 e8 -> 0
+ok    Load live03 e9 -> 0
+ok    Load live04 e10 -> 0
+ok    Combo CROWD -> 0
+ok    Combo CROWD + live01 -> 0
+ok    Combo CROWD + live02 -> 0
+ok    Combo CROWD + live03 -> 0
+ok    Combo CROWD + live04 -> 0
+ok    Combo CROWD_SEISM -> 0
+ok    Combo CROWD_SEISM + live01 -> 0
+ok    Combo CROWD_SEISM + live02 -> 0
+ok    Combo CROWD_SEISM + live03 -> 0
+ok    Combo CROWD_SEISM + live04 -> 0
+ok    Combo WIND -> 0
+ok    Combo WIND + W+ -> 0
+ok    Combo WIND + W- -> 0
+ok    Combo ULS_Q_leading_W+ -> 0
+ok    Combo ULS_Q_leading_W+ + SW -> 0
+ok    Combo ULS_Q_leading_W+ + G -> 0
+ok    Combo ULS_Q_leading_W+ + CROWD -> 0
+ok    Combo ULS_Q_leading_W+ + W+ -> 0
+ok    Combo ULS_Q_leading_W- -> 0
+ok    Combo ULS_Q_leading_W- + SW -> 0
+ok    Combo ULS_Q_leading_W- + G -> 0
+ok    Combo ULS_Q_leading_W- + CROWD -> 0
+ok    Combo ULS_Q_leading_W- + W- -> 0
+ok    Combo ULS_W+_leading -> 0
+ok    Combo ULS_W+_leading + SW -> 0
+ok    Combo ULS_W+_leading + G -> 0
+ok    Combo ULS_W+_leading + CROWD -> 0
+ok    Combo ULS_W+_leading + W+ -> 0
+ok    Combo ULS_W-_leading -> 0
+ok    Combo ULS_W-_leading + SW -> 0
+ok    Combo ULS_W-_leading + G -> 0
+ok    Combo ULS_W-_leading + CROWD -> 0
+ok    Combo ULS_W-_leading + W- -> 0
+ok    Combo SLS_char_W+ -> 0
+ok    Combo SLS_char_W+ + SW -> 0
+ok    Combo SLS_char_W+ + G -> 0
+ok    Combo SLS_char_W+ + CROWD -> 0
+ok    Combo SLS_char_W+ + W+ -> 0
+ok    Combo SLS_char_W- -> 0
+ok    Combo SLS_char_W- + SW -> 0
+ok    Combo SLS_char_W- + G -> 0
+ok    Combo SLS_char_W- + CROWD -> 0
+ok    Combo SLS_char_W- + W- -> 0
+ok    Combo SLS_quasi_perm -> 0
+ok    Combo SLS_quasi_perm + SW -> 0
+ok    Combo SLS_quasi_perm + G -> 0
+ok    Combo SLS_quasi_perm + live01 -> 0
+ok    Combo SLS_quasi_perm + live02 -> 0
+ok    Combo SLS_quasi_perm + live03 -> 0
+ok    Combo SLS_quasi_perm + live04 -> 0
+ok    SetMassSource -> 0
+ok    SetNumberModes -> 0
+ok    FuncRS.SetUser -> 0
+ok    RS SetCase -> 0
+ok    RS SetModalCase -> 0
+ok    RS SetModalComb_1 -> 0
+ok    RS SetDirComb -> 0
+ok    RS SetLoads -> 0
+ok    RS SetDampConstant -> 0
+ok    Save -> 0
+ok    SetRunCaseFlag all -> 0
+ok    RunAnalysis -> 0
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Modal Periods And Frequencies -> 0
+      Modal Periods And Frequencies: 6 rows
+ok    Table Modal Participating Mass Ratios -> 0
+      Modal Participating Mass Ratios: 6 rows
+ok    Table Joint Displacements -> 0
+      Joint Displacements: 63 rows
+ok    Table Base Reactions -> 0
+      Base Reactions: 7 rows
+ok    Table Element Forces - Frames -> 0
+      Element Forces - Frames: 770 rows
+ok    Table Assembled Joint Masses -> 0
+      Assembled Joint Masses: 12 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Active Degrees of Freedom -> 0
+      Active Degrees of Freedom: 1 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Frame Section Properties 01 - General -> 0
+      Frame Section Properties 01 - General: 2 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Frame Property Modifiers -> 0
+      Frame Property Modifiers: 1 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Combination Definitions -> 0
+      Combination Definitions: 40 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Mass Source -> 0
+      Mass Source: 6 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+ok    Table Function - Response Spectrum - User -> 0
+      Function - Response Spectrum - User: 85 rows
+ok    SetLoadCasesSelectedForDisplay -> 0
+ok    SetLoadCombinationsSelectedForDisplay -> 0
+FAIL  Table Frame Loads - Distributed -> 1
