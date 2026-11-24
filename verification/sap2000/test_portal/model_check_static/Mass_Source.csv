@@ -1,0 +1,7 @@
+MassSource,Elements,Masses,Loads,IsDefault,LoadPat,Multiplier
+MSSSRC1,Yes,Yes,No,No,,
+ARCOPY_MASS,Yes,Yes,Yes,Yes,G,1
+ARCOPY_MASS,,,,,live01,0.3
+ARCOPY_MASS,,,,,live02,0.3
+ARCOPY_MASS,,,,,live03,0.3
+ARCOPY_MASS,,,,,live04,0.3

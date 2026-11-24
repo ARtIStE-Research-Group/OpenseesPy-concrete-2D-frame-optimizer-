@@ -1,0 +1,13 @@
+{
+ "n_static": 228564,
+ "static_max_digit": 0.5000000000023874,
+ "static_bias_digit": 0.0016135782349716368,
+ "static_sd_digit": 0.2832347947662062,
+ "share_within_half_digit": 1.0,
+ "n_rsa": 2994,
+ "rsa_max_pct": 0.11408461246905537,
+ "rsa_bias_pct": -0.00018604139952841032,
+ "rsa_sd_pct": 0.008836043184773221,
+ "MAC_min": 0.9999999998253035,
+ "T_max_diff_pct": 0.0006626453241250472
+}

@@ -1,0 +1,8 @@
+OutputCase,CaseType,StepType,StepNum,GlobalFX,GlobalFY,GlobalFZ,GlobalMX,GlobalMY,GlobalMZ,GlobalX,GlobalY,GlobalZ,XCentroidFX,YCentroidFX,ZCentroidFX,XCentroidFY,YCentroidFY,ZCentroidFY,XCentroidFZ,YCentroidFZ,ZCentroidFZ
+MODAL,LinModal,Mode,1,436.981,0,-3.968E-11,0,2810.7976,0,0,0,0,5,0,0,0,0,0,0,0,0
+MODAL,LinModal,Mode,2,1147.907,0,-3.884E-10,0,-645.7577,0,0,0,0,5,0,0,0,0,0,0,0,0
+MODAL,LinModal,Mode,3,5.952E-10,0,-111779.577,0,558897.8874,0,0,0,0,0,0,0,0,0,0,5,0,0
+MODAL,LinModal,Mode,4,168.925,0,0.0007895,0,-1078304,0,0,0,0,5,0,0,0,0,0,1366055724,0,0
+MODAL,LinModal,Mode,5,6.246E-07,0,-214690.64,0,1073453.195,0,0,0,0,0,0,0,0,0,0,5,0,0
+MODAL,LinModal,Mode,6,-2.574E-09,0,534.212,0,-2671.0606,0,0,0,0,0,0,0,0,0,0,5,0,0
+RSA_X,LinRespSpec,Max,,167.82,0,1.787E-11,0,1064.4227,0,0,0,0,0,0,0,0,0,0,0,0,0
