@@ -1,0 +1,161 @@
+case,element,member,end,N_kN,V_kN,M_kNm
+SW,1,C1 storey 1 left,start,-34.3388,-0.7280,0.9739
+SW,1,C1 storey 1 left,end,-25.5098,-0.7280,-1.9382
+SW,2,C2 storey 1 middle,start,-57.8713,-0.0000,0.0000
+SW,2,C2 storey 1 middle,end,-49.0423,-0.0000,-0.0000
+SW,3,C3 storey 1 right,start,-34.3388,0.7280,-0.9739
+SW,3,C3 storey 1 right,end,-25.5098,0.7280,1.9382
+SW,4,C4 storey 2 left,start,-16.9715,-1.8606,3.4367
+SW,4,C4 storey 2 left,end,-8.1425,-1.8606,-4.0058
+SW,5,C5 storey 2 middle,start,-29.3316,-0.0000,0.0000
+SW,5,C5 storey 2 middle,end,-20.5026,-0.0000,-0.0000
+SW,6,C6 storey 2 right,start,-16.9715,1.8606,-3.4367
+SW,6,C6 storey 2 right,end,-8.1425,1.8606,4.0058
+SW,7,"Beam 1 (floor 1, bay 1)",start,1.1326,8.5384,-5.3749
+SW,7,"Beam 1 (floor 1, bay 1)",end,1.1326,-9.8554,-8.6674
+SW,8,"Beam 2 (floor 1, bay 2)",start,1.1326,9.8554,-8.6674
+SW,8,"Beam 2 (floor 1, bay 2)",end,1.1326,-8.5384,-5.3749
+SW,9,"Beam 3 (roof, bay 1)",start,-1.8606,8.1425,-4.0058
+SW,9,"Beam 3 (roof, bay 1)",end,-1.8606,-10.2513,-9.2778
+SW,10,"Beam 4 (roof, bay 2)",start,-1.8606,10.2513,-9.2778
+SW,10,"Beam 4 (roof, bay 2)",end,-1.8606,-8.1425,-4.0058
+G,1,C1 storey 1 left,start,-99.9529,-4.9400,6.6035
+G,1,C1 storey 1 left,end,-99.9529,-4.9400,-13.1567
+G,2,C2 storey 1 middle,start,-240.0942,-0.0000,0.0000
+G,2,C2 storey 1 middle,end,-240.0942,-0.0000,-0.0000
+G,3,C3 storey 1 right,start,-99.9529,4.9400,-6.6035
+G,3,C3 storey 1 right,end,-99.9529,4.9400,13.1567
+G,4,C4 storey 2 left,start,-44.5227,-10.9082,21.0499
+G,4,C4 storey 2 left,end,-44.5227,-10.9082,-22.5828
+G,5,C5 storey 2 middle,start,-110.9545,-0.0000,0.0000
+G,5,C5 storey 2 middle,end,-110.9545,-0.0000,-0.0000
+G,6,C6 storey 2 right,start,-44.5227,10.9082,-21.0499
+G,6,C6 storey 2 right,end,-44.5227,10.9082,22.5828
+G,7,"Beam 1 (floor 1, bay 1)",start,5.9681,55.4302,-34.2066
+G,7,"Beam 1 (floor 1, bay 1)",end,5.9681,-64.5698,-57.0558
+G,8,"Beam 2 (floor 1, bay 2)",start,5.9681,64.5698,-57.0558
+G,8,"Beam 2 (floor 1, bay 2)",end,5.9681,-55.4302,-34.2066
+G,9,"Beam 3 (roof, bay 1)",start,-10.9082,44.5227,-22.5828
+G,9,"Beam 3 (roof, bay 1)",end,-10.9082,-55.4773,-49.9692
+G,10,"Beam 4 (roof, bay 2)",start,-10.9082,55.4773,-49.9692
+G,10,"Beam 4 (roof, bay 2)",end,-10.9082,-44.5227,-22.5828
+live01,1,C1 storey 1 left,start,-19.3495,-2.0457,2.4461
+live01,1,C1 storey 1 left,end,-19.3495,-2.0457,-5.7366
+live01,2,C2 storey 1 middle,start,-21.4693,2.1272,-3.1165
+live01,2,C2 storey 1 middle,end,-21.4693,2.1272,5.3922
+live01,3,C3 storey 1 right,start,0.8189,-0.0815,-0.1718
+live01,3,C3 storey 1 right,end,0.8189,-0.0815,-0.4977
+live01,4,C4 storey 2 left,start,-0.1512,-1.6063,5.2150
+live01,4,C4 storey 2 left,end,-0.1512,-1.6063,-1.2102
+live01,5,C5 storey 2 middle,start,0.5103,1.6274,-4.6596
+live01,5,C5 storey 2 middle,end,0.5103,1.6274,1.8500
+live01,6,C6 storey 2 right,start,-0.3591,-0.0211,0.4837
+live01,6,C6 storey 2 right,end,-0.3591,-0.0211,0.3994
+live01,7,"Beam 1 (floor 1, bay 1)",start,-0.4394,19.1983,-10.9516
+live01,7,"Beam 1 (floor 1, bay 1)",end,-0.4394,-20.8017,-14.9601
+live01,8,"Beam 2 (floor 1, bay 2)",start,0.0604,1.1780,-4.9084
+live01,8,"Beam 2 (floor 1, bay 2)",end,0.0604,1.1780,0.9814
+live01,9,"Beam 3 (roof, bay 1)",start,-1.6063,0.1512,-1.2102
+live01,9,"Beam 3 (roof, bay 1)",end,-1.6063,0.1512,-0.4540
+live01,10,"Beam 4 (roof, bay 2)",start,0.0211,-0.3591,1.3960
+live01,10,"Beam 4 (roof, bay 2)",end,0.0211,-0.3591,-0.3994
+live02,1,C1 storey 1 left,start,0.8189,0.0815,0.1718
+live02,1,C1 storey 1 left,end,0.8189,0.0815,0.4977
+live02,2,C2 storey 1 middle,start,-21.4693,-2.1272,3.1165
+live02,2,C2 storey 1 middle,end,-21.4693,-2.1272,-5.3922
+live02,3,C3 storey 1 right,start,-19.3495,2.0457,-2.4461
+live02,3,C3 storey 1 right,end,-19.3495,2.0457,5.7366
+live02,4,C4 storey 2 left,start,-0.3591,0.0211,-0.4837
+live02,4,C4 storey 2 left,end,-0.3591,0.0211,-0.3994
+live02,5,C5 storey 2 middle,start,0.5103,-1.6274,4.6596
+live02,5,C5 storey 2 middle,end,0.5103,-1.6274,-1.8500
+live02,6,C6 storey 2 right,start,-0.1512,1.6063,-5.2150
+live02,6,C6 storey 2 right,end,-0.1512,1.6063,1.2102
+live02,7,"Beam 1 (floor 1, bay 1)",start,0.0604,-1.1780,0.9814
+live02,7,"Beam 1 (floor 1, bay 1)",end,0.0604,-1.1780,-4.9084
+live02,8,"Beam 2 (floor 1, bay 2)",start,-0.4394,20.8017,-14.9601
+live02,8,"Beam 2 (floor 1, bay 2)",end,-0.4394,-19.1983,-10.9516
+live02,9,"Beam 3 (roof, bay 1)",start,0.0211,0.3591,-0.3994
+live02,9,"Beam 3 (roof, bay 1)",end,0.0211,0.3591,1.3960
+live02,10,"Beam 4 (roof, bay 2)",start,-1.6063,-0.1512,-0.4540
+live02,10,"Beam 4 (roof, bay 2)",end,-1.6063,-0.1512,-1.2102
+live03,1,C1 storey 1 left,start,-14.1437,0.3283,-0.3987
+live03,1,C1 storey 1 left,end,-14.1437,0.3283,0.9145
+live03,2,C2 storey 1 middle,start,-16.6917,-0.3708,0.5271
+live03,2,C2 storey 1 middle,end,-16.6917,-0.3708,-0.9562
+live03,3,C3 storey 1 right,start,0.8354,0.0425,-0.0237
+live03,3,C3 storey 1 right,end,0.8354,0.0425,0.1465
+live03,4,C4 storey 2 left,start,-14.0620,-1.9348,1.7485
+live03,4,C4 storey 2 left,end,-14.0620,-1.9348,-5.9907
+live03,5,C5 storey 2 middle,start,-17.1025,2.0238,-2.5729
+live03,5,C5 storey 2 middle,end,-17.1025,2.0238,5.5223
+live03,6,C6 storey 2 right,start,1.1645,-0.0890,-0.3084
+live03,6,C6 storey 2 right,end,1.1645,-0.0890,-0.6644
+live03,7,"Beam 1 (floor 1, bay 1)",start,2.2631,0.0816,-0.8340
+live03,7,"Beam 1 (floor 1, bay 1)",end,2.2631,0.0816,-0.4259
+live03,8,"Beam 2 (floor 1, bay 2)",start,-0.1316,-0.3291,1.1908
+live03,8,"Beam 2 (floor 1, bay 2)",end,-0.1316,-0.3291,-0.4549
+live03,9,"Beam 3 (roof, bay 1)",start,-1.9348,14.0620,-5.9907
+live03,9,"Beam 3 (roof, bay 1)",end,-1.9348,-15.9380,-10.6805
+live03,10,"Beam 4 (roof, bay 2)",start,0.0890,1.1645,-5.1581
+live03,10,"Beam 4 (roof, bay 2)",end,0.0890,1.1645,0.6644
+live04,1,C1 storey 1 left,start,0.8354,-0.0425,0.0237
+live04,1,C1 storey 1 left,end,0.8354,-0.0425,-0.1465
+live04,2,C2 storey 1 middle,start,-16.6917,0.3708,-0.5271
+live04,2,C2 storey 1 middle,end,-16.6917,0.3708,0.9562
+live04,3,C3 storey 1 right,start,-14.1437,-0.3283,0.3987
+live04,3,C3 storey 1 right,end,-14.1437,-0.3283,-0.9145
+live04,4,C4 storey 2 left,start,1.1645,0.0890,0.3084
+live04,4,C4 storey 2 left,end,1.1645,0.0890,0.6644
+live04,5,C5 storey 2 middle,start,-17.1025,-2.0238,2.5729
+live04,5,C5 storey 2 middle,end,-17.1025,-2.0238,-5.5223
+live04,6,C6 storey 2 right,start,-14.0620,1.9348,-1.7485
+live04,6,C6 storey 2 right,end,-14.0620,1.9348,5.9907
+live04,7,"Beam 1 (floor 1, bay 1)",start,-0.1316,0.3291,-0.4549
+live04,7,"Beam 1 (floor 1, bay 1)",end,-0.1316,0.3291,1.1908
+live04,8,"Beam 2 (floor 1, bay 2)",start,2.2631,-0.0816,-0.4259
+live04,8,"Beam 2 (floor 1, bay 2)",end,2.2631,-0.0816,-0.8340
+live04,9,"Beam 3 (roof, bay 1)",start,0.0890,-1.1645,0.6644
+live04,9,"Beam 3 (roof, bay 1)",end,0.0890,-1.1645,-5.1581
+live04,10,"Beam 4 (roof, bay 2)",start,-1.9348,15.9380,-10.6805
+live04,10,"Beam 4 (roof, bay 2)",end,-1.9348,-14.0620,-5.9907
+W+,1,C1 storey 1 left,start,4.3021,6.9200,-11.7110
+W+,1,C1 storey 1 left,end,4.3021,1.3200,4.7691
+W+,2,C2 storey 1 middle,start,0.3670,5.4827,-11.6444
+W+,2,C2 storey 1 middle,end,0.3670,5.4827,10.2863
+W+,3,C3 storey 1 right,start,-4.6691,4.3973,-10.1886
+W+,3,C3 storey 1 right,end,-4.6691,4.3973,7.4006
+W+,4,C4 storey 2 left,start,0.6677,7.2898,-5.5504
+W+,4,C4 storey 2 left,end,0.6677,-3.9102,1.2087
+W+,5,C5 storey 2 middle,start,0.7087,2.5681,-4.8444
+W+,5,C5 storey 2 middle,end,0.7087,2.5681,5.4280
+W+,6,C6 storey 2 right,start,-1.3764,1.3421,-1.7846
+W+,6,C6 storey 2 right,end,-1.3764,1.3421,3.5839
+W+,7,"Beam 1 (floor 1, bay 1)",start,-5.9697,-3.6344,10.3195
+W+,7,"Beam 1 (floor 1, bay 1)",end,-5.9697,-3.6344,-7.8523
+W+,8,"Beam 2 (floor 1, bay 2)",start,-3.0552,-3.2927,7.2785
+W+,8,"Beam 2 (floor 1, bay 2)",end,-3.0552,-3.2927,-9.1851
+W+,9,"Beam 3 (roof, bay 1)",start,-3.9102,-0.6677,1.2087
+W+,9,"Beam 3 (roof, bay 1)",end,-3.9102,-0.6677,-2.1299
+W+,10,"Beam 4 (roof, bay 2)",start,-1.3421,-1.3764,3.2981
+W+,10,"Beam 4 (roof, bay 2)",end,-1.3421,-1.3764,-3.5839
+W-,1,C1 storey 1 left,start,-4.6691,-4.3973,10.1886
+W-,1,C1 storey 1 left,end,-4.6691,-4.3973,-7.4006
+W-,2,C2 storey 1 middle,start,0.3670,-5.4827,11.6444
+W-,2,C2 storey 1 middle,end,0.3670,-5.4827,-10.2863
+W-,3,C3 storey 1 right,start,4.3021,-6.9200,11.7110
+W-,3,C3 storey 1 right,end,4.3021,-1.3200,-4.7691
+W-,4,C4 storey 2 left,start,-1.3764,-1.3421,1.7846
+W-,4,C4 storey 2 left,end,-1.3764,-1.3421,-3.5839
+W-,5,C5 storey 2 middle,start,0.7087,-2.5681,4.8444
+W-,5,C5 storey 2 middle,end,0.7087,-2.5681,-5.4280
+W-,6,C6 storey 2 right,start,0.6677,-7.2898,5.5504
+W-,6,C6 storey 2 right,end,0.6677,3.9102,-1.2087
+W-,7,"Beam 1 (floor 1, bay 1)",start,-3.0552,3.2927,-9.1851
+W-,7,"Beam 1 (floor 1, bay 1)",end,-3.0552,3.2927,7.2785
+W-,8,"Beam 2 (floor 1, bay 2)",start,-5.9697,3.6344,-7.8523
+W-,8,"Beam 2 (floor 1, bay 2)",end,-5.9697,3.6344,10.3195
+W-,9,"Beam 3 (roof, bay 1)",start,-1.3421,1.3764,-3.5839
+W-,9,"Beam 3 (roof, bay 1)",end,-1.3421,1.3764,3.2981
+W-,10,"Beam 4 (roof, bay 2)",start,-3.9102,0.6677,-2.1299
+W-,10,"Beam 4 (roof, bay 2)",end,-3.9102,0.6677,1.2087
