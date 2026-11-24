@@ -1,0 +1,15 @@
+OutputCase,CaseType,GlobalFX,GlobalFY,GlobalFZ,GlobalMX,GlobalMY,GlobalMZ,GlobalX,GlobalY,GlobalZ,XCentroidFX,YCentroidFX,ZCentroidFX,XCentroidFY,YCentroidFY,ZCentroidFY,XCentroidFZ,YCentroidFZ,ZCentroidFZ
+SW,LinStatic,-6.661E-16,0,588.6,0,-7651.8,0,0,0,0,0,0,0,0,0,0,13,0,0
+G,LinStatic,-8.882E-15,0,2392,0,-31096,0,0,0,0,0,0,0,0,0,0,13,0,0
+W+,LinStatic,-60,0,-8.882E-15,0,-472.5,0,0,0,0,12.54704,0,0,0,0,0,0,0,0
+W-,LinStatic,60,0,8.882E-15,0,472.5,0,0,0,0,13.45296,0,0,0,0,0,0,0,0
+live01,LinStatic,-2.776E-16,0,15,0,-195,0,0,0,0,0,0,0,0,0,0,13,0,0
+ULS_Q_leading_W+,Combination,-54,0,4046.31,0,-53027.28,0,0,0,0,20.17234,0,0,0,0,0,13.07857,0,0
+ULS_Q_leading_W-,Combination,54,0,4046.31,0,-52176.78,0,0,0,0,5.82766,0,0,0,0,0,12.92143,0,0
+ULS_W+_leading,Combination,-90,0,4039.56,0,-53223.03,0,0,0,0,17.08515,0,0,0,0,0,13.13117,0,0
+ULS_W-_leading,Combination,90,0,4039.56,0,-51805.53,0,0,0,0,8.91485,0,0,0,0,0,12.86883,0,0
+SLS_char_W+,Combination,-36,0,2995.6,0,-39226.3,0,0,0,0,20.99671,0,0,0,0,0,13.07076,0,0
+SLS_char_W-,Combination,36,0,2995.6,0,-38659.3,0,0,0,0,5.00329,0,0,0,0,0,12.92924,0,0
+SLS_frequent_W+,Combination,-9.687E-15,0,2988.1,0,-38845.3,0,0,0,0,0,0,0,0,0,0,13,0,0
+SLS_frequent_W-,Combination,-9.687E-15,0,2988.1,0,-38845.3,0,0,0,0,0,0,0,0,0,0,13,0,0
+SLS_quasi_perm,Combination,-9.631E-15,0,2985.1,0,-38806.3,0,0,0,0,0,0,0,0,0,0,13,0,0
