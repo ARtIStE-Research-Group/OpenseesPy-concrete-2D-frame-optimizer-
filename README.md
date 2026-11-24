@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](requirements.txt)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23686655.svg)](https://doi.org/10.5281/zenodo.23686655)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22812753.svg)](https://doi.org/10.5281/zenodo.22812753)
 
 OpenSeesPy-based framework for the earthquake assessment of existing reinforced concrete (RC) frames and the optimization of their retrofit: Eurocode checks, drift and member performance, RC shear-wall placement, concrete jacketing, cost evaluation and automated reporting.
 
@@ -19,15 +19,17 @@ User manual: [Manual_Polito_Work_Station_beta_03_EN.pdf](Manual_Polito_Work_Stat
 
 ---
 
-## What's new in v1.2.0
+## What's new in v1.3.0
 
-- **Bayesian shear-wall search** (Tree-structured Parzen Estimator, Optuna): each new wall layout is chosen from the results of all previous complete retrofit strategies. Physics-guided first trials, constraint handling, cache of analysed layouts and local refinement. See [docs/smart_search.md](docs/smart_search.md).
-- **EC8 seismic action inside the retrofit loop**: lateral force method for every candidate, damage-limitation drift check and interstorey drift sensitivity (θ) check, EN 1998-3 knowledge level and confidence factor.
-- **Iterative concrete jacketing** with detailing limits (bar clear spacing, cage, stirrup spacing, maximum jacket thickness and section enlargement).
-- **Step checkpoints**: a run can be resumed from any of its 12 steps without re-entering the model.
-- **Word + Excel retrofit report** with figures of the selected strategy.
-- **Verification suite** (`tests/run_verification.py`): 26 checks of framekit results against closed-form hand calculations.
-- Reproducible **example** of a 4-storey, 5-bay frame in `examples/four_storey_frame`.
+- **Verification against SAP2000** ([verification/sap2000](verification/sap2000)): a two-storey portal and six frames with up to 120 members, with the SAP2000 models built by script from the ARCOPY data. About 238,000 static results are equal to the last digit printed by SAP2000; periods agree within 0.001 % and response-spectrum results within 0.01 %, apart from the rounding of small printed values.
+- **Examples of the paper** ([examples](examples)): the two-storey portal and the six frames (4, 6 and 8 storeys; 5 and 7 bays), with input files, a script that runs them and reference results.
+- **Up to three wall segments per layout** in the retrofit search (default two), with one more physics-guided first trial of the Bayesian search. The eight-storey example frames need it.
+- **NTC 2008 response spectrum** as an alternative to EN 1998-1, and a **gross-section stiffness option** (b·h instead of concrete plus bars).
+- **Live load cases and load groups** (Linear Add, Range Add, Envelope), combined at result level; user-defined combinations.
+- **Wind per storey** with an optional leeward part; N/V/M diagrams with tables of end and extreme values; number of sections along the members chosen by the user.
+- **Tests**: 33 checks against hand calculations and 56 checks of the portal against an independent direct-stiffness calculation.
+
+Version 1.2.0 introduced the Bayesian shear-wall search (see [docs/smart_search.md](docs/smart_search.md)), the EC8 seismic action inside the retrofit loop, the iterative concrete jacketing with detailing limits, the step checkpoints and the Word + Excel retrofit report.
 
 Full list: [CHANGELOG.md](CHANGELOG.md).
 
@@ -44,7 +46,10 @@ The program interactively generates the structural model and allows the user to 
 - RC beam and column sections;
 - material properties;
 - existing shear walls;
-- permanent, variable, wind, and self-weight load cases.
+- section stiffness: transformed section (concrete plus bars) or gross concrete section;
+- permanent, variable, wind, and self-weight load cases;
+- live load cases on chosen beams, and load groups (Linear Add, Range Add, Envelope);
+- wind as one distributed load per storey (or triangular), with an optional leeward part.
 
 The finite-element model is assembled and analysed using **OpenSeesPy**.
 
@@ -89,7 +94,7 @@ These include:
 - eigenvalue analysis;
 - modal periods and mode shapes;
 - modal participation assessment;
-- EC8 response-spectrum analysis;
+- response-spectrum analysis with the EN 1998-1 or the NTC 2008 design spectrum;
 - directional response-spectrum combination;
 - EC8 drift checks;
 - linear time-history analysis using multiple records.
@@ -151,6 +156,8 @@ Candidate shear-wall configurations can vary according to:
 - layout configuration.
 
 The current framework supports a hybrid wall-layout search and evaluates alternative wall thicknesses.
+
+The user sets the largest number of wall segments per layout (1 to 3, default 2). With three segments the number of layouts grows quickly (for an 8-storey, 5-bay frame from about 10,000 to about 206,000), so the smart search is then the practical choice.
 
 To control computational cost, the user can specify the maximum number of screened shear-wall candidates (screening) or the number of complete analyses (smart search).
 
@@ -257,15 +264,23 @@ or open `main.py` in Spyder and press Run. The program asks for the model, loads
 - Every run has a name; its results go to a folder with that name next to `main.py`.
 - After each of the 12 steps the state is saved in `<run>/_checkpoints`. Starting `main.py` again with the same run name lets you continue, or restart from any earlier step without re-entering the model.
 
-# Example
+# Examples
 
-`examples/four_storey_frame` contains the 4-storey, 5-bay frame used in the paper: the answers to all prompts (`inputs.txt`) and the reference results. To reproduce it:
+Each example has the answers to all prompts in a text file, so it runs without typing, and its reference results.
+
+| Folder | Content |
+|---|---|
+| [examples/test_rc_portal](examples/test_rc_portal) | two-storey, two-bay portal with live load cases and load groups; the verification example (paper, Section 3) |
+| [examples/six_frames](examples/six_frames) | the six frames of the paper (Section 4): existing frame, screening and Bayesian search |
+| [examples/four_storey_frame](examples/four_storey_frame) | four-storey, five-bay frame of v1.2.0 |
 
 ```bash
-python main.py < examples/four_storey_frame/inputs.txt
+python main.py < examples/test_rc_portal/inputs.txt
+python main.py < examples/six_frames/inputs/F4-5B_bayes.txt
+python examples/six_frames/run_all.py
 ```
 
-See [examples/four_storey_frame/README.md](examples/four_storey_frame/README.md).
+In Windows PowerShell use `Get-Content <file> | python main.py`. To run without figure windows set the Matplotlib backend first (`set MPLBACKEND=Agg` in cmd); `run_all.py` does it by itself.
 
 # Verification
 
@@ -273,7 +288,15 @@ See [examples/four_storey_frame/README.md](examples/four_storey_frame/README.md)
 python tests/run_verification.py
 ```
 
-compares framekit results with closed-form hand calculations (self-weight and seismic masses, N/V/M diagrams, EC8 spectra and CQC, behaviour factor and confidence factor, lateral force method, cracked stiffness, jacket detailing) and prints `ALL CHECKS PASSED`.
+compares framekit results with closed-form hand calculations (self-weight and seismic masses, N/V/M diagrams, wind loads, EN 1998-1 and NTC 2008 spectra, CQC, behaviour factor and confidence factor, lateral force method, cracked stiffness, gross-section option, jacket detailing) and prints `ALL CHECKS PASSED  (33 checks)`.
+
+```bash
+python tests/verify_test_rc_portal.py
+```
+
+runs the portal example and checks it against an independent direct-stiffness calculation written with NumPy (56 checks, about one minute).
+
+The comparison with SAP2000 (models, result tables, scripts and statistics) is in [verification/sap2000](verification/sap2000).
 
 ---
 
@@ -321,8 +344,10 @@ report/figures/
 main.py                       interactive workflow (12 steps)
 frame_app/framekit/           modelling, analysis, Eurocode checks, retrofit search, reporting
 records/                      ground-motion records for time-history analysis
-tests/                        verification against hand calculations
-examples/four_storey_frame/   inputs and reference results of the example frame
+redraw_nvm.py                 redraws the N/V/M diagrams of a saved run
+tests/                        verification against hand calculations and of the portal example
+examples/                     input files and reference results (portal, six frames, four-storey frame)
+verification/sap2000/         comparison with SAP2000: scripts, models, result tables, statistics
 docs/                         smart-search description
 ```
 
@@ -344,12 +369,12 @@ See also [Disclaimer](Disclaimer) and [Scope and Limitations](Scope%20and%20Limi
 
 If you use ARCOPY in research or professional work, please cite the software release (see [CITATION.cff](CITATION.cff) and [Citation](Citation)):
 
-> Marano, G. C., Hajiha, A. (2026). ARCOPY: seismic assessment and cost-based retrofit optimization of RC frames with OpenSeesPy (v1.2.0). ARTISTE Research Group, Politecnico di Torino. Zenodo. https://doi.org/10.5281/zenodo.23686655
+> Hajiha, A., Marano, G. C., Bertagnoli, G., Sardone, L., Datta, G. (2026). ARCOPY: seismic assessment and cost-based retrofit optimization of RC frames with OpenSeesPy (v1.3.0). ARTISTE Research Group, Politecnico di Torino. Zenodo. https://doi.org/10.5281/zenodo.22812753
 
-Previous version (v1.0.0): https://doi.org/10.5281/zenodo.22812754
+This DOI covers all versions and resolves to the latest release. Each release also has its own DOI on Zenodo (v1.3.0: https://doi.org/10.5281/zenodo.24494048; v1.2.0: https://doi.org/10.5281/zenodo.23686655; v1.0.0: https://doi.org/10.5281/zenodo.22812754).
 
 # Authors
 
-Giuseppe Carlo Marano and Arman Hajiha – ARTISTE Research Group, Department of Structural, Building and Geotechnical Engineering (DISEG), Politecnico di Torino.
+Arman Hajiha and Giuseppe Carlo Marano, with Gabriele Bertagnoli (supervision), Laura Sardone and Gaurav Datta (research group) – ARTISTE Research Group, Department of Structural, Building and Geotechnical Engineering (DISEG), Politecnico di Torino.
 
 Questions and bug reports: please open an issue on GitHub.

@@ -27,9 +27,14 @@ from framekit.geometry import ask_geometry, generate_nodes, generate_elements
 from framekit.plotting import plot_structure
 from framekit.section_library import ask_sections_rc, plot_selected_rc_sections, plot_jacketed_section_comparisons
 from framekit.loads import ask_structure_type, ask_material, compute_self_weight, compute_wall_self_weight, ask_loads_by_cases
-from framekit.combinations import build_eurocode_combinations, print_combinations_detailed
+from framekit.combinations import build_eurocode_combinations, print_combinations_detailed, ask_user_combinations
+from framekit.member_sections import ask_member_sections, set_member_sections
+from framekit.load_groups import ask_load_groups
+from framekit.superposition import is_group_combo, node_disps_by_case, story_drift_envelope
+from framekit.diagrams import nvm_envelope_for_combo
 from framekit.walls import ask_shear_walls, ask_shear_wall_section
 from framekit.opensees_model import ops_build_model, ops_apply_combo_loads, ops_run_static
+from framekit.opensees_model import ask_section_stiffness, set_section_stiffness
 from framekit.units import _MPa_to_Pa
 from framekit.static_analysis import (
     get_node_disps,
@@ -42,7 +47,6 @@ from framekit.diagrams import (
     plot_all_combos_NVM,
     collect_member_force_diagrams_for_report,
 )
-
 
 from framekit.ec2_checks import (
     ask_ec2_materials_default_or_custom,
@@ -424,13 +428,25 @@ def _collect_member_force_diagrams_by_uls_scan(
                     use_rigid_diaphragm=spec.get("use_rigid_diaphragm", False),
                     element_sections=spec.get("element_sections", None),
                 )
-                ops_apply_combo_loads_fn(nodes, elements, combos[cname]["loads"])
-                ok = ops_run_static_fn()
-                if ok != 0:
-                    continue
+                from framekit.diagrams import nvm_envelope_for_combo, envelope_to_dataframe
+                _env = nvm_envelope_for_combo(
+                    nodes, elements, combos[cname]["loads"], Ec_Pa, Es_Pa, column_sec, beam_sec, geom,
+                    ops_build_model_fn, ops_apply_combo_loads_fn, ops_run_static_fn, walls=spec.get("walls", None),
+                    wall_tw_mm=spec.get("wall_tw_mm", 200.0), wall_E_Pa=spec.get("wall_E_Pa", 30e9),
+                    element_sections=spec.get("element_sections", None), npts=npts, element_ids=target_ids)
+                if _env is None:
+                    ops_apply_combo_loads_fn(nodes, elements, combos[cname]["loads"])
+                    ok = ops_run_static_fn()
+                    if ok != 0:
+                        continue
                 for eid in target_ids:
-                    result = _nvm_arrays_for_element(eid, elements, combos[cname]["loads"], nodes, npts=npts)
-                    df = _nvm_result_dataframe_for_report(result, governing_combo=cname)
+                    if _env is not None:
+                        df = envelope_to_dataframe(_env[eid], getattr(_env, "governing", {}).get(eid)) if eid in _env else None
+                        if df is not None:
+                            df["Governing_Combo"] = str(cname)
+                    else:
+                        result = _nvm_arrays_for_element(eid, elements, combos[cname]["loads"], nodes, npts=npts)
+                        df = _nvm_result_dataframe_for_report(result, governing_combo=cname)
                     if df is None or df.empty:
                         continue
                     # Select a real governing combination.  The score is a
@@ -474,6 +490,10 @@ if __name__ == "__main__":
     jacketing_iteration_worst_dfs = []
     member_force_diagrams = None
     optimization_dataset_df = None
+    n_sections_beam = None
+    n_sections_column = None
+    load_groups = None
+    section_stiffness = "transformed"
 
     # ------------------------------------------------------------
     # Automatic checkpoints: state saved after every step
@@ -555,7 +575,9 @@ if __name__ == "__main__":
 
         # 5) Material
         material = ask_material("Concrete" if stype == "rc" else "Steel")
+        section_stiffness = ask_section_stiffness()
         ckpt.done("model")
+    set_section_stiffness(section_stiffness)
 
 
     if ckpt.need("loads"):
@@ -571,7 +593,7 @@ if __name__ == "__main__":
             print(f"{k}: {len(v)} loads")
 
         print("\nShowing each load case separately...")
-        for case_name in ["SW", "G", "Q", "W+", "W-"]:
+        for case_name in ["SW", "G", "Q", "W+", "W-"] + [k for k in cases if k not in ("SW", "G", "Q", "W+", "W-")]:
             if cases.get(case_name):
                 plot_structure(
                     nodes,
@@ -582,10 +604,22 @@ if __name__ == "__main__":
                     title=f"Structure + Loads : {case_name}"
                 )
 
-        # 7) Combinations
-        combos = build_eurocode_combinations(cases)
+        # 7) Combinations: load groups (if live load cases were defined), automatic
+        #    Eurocode set, then optional user-defined ones
+        load_groups = ask_load_groups(cases)
+        combos = build_eurocode_combinations(cases, load_groups)
         names = print_combinations_detailed(combos)
+        combos, _user_combos = ask_user_combinations(cases, combos, load_groups)
+        if _user_combos:
+            names = print_combinations_detailed(combos)
+
+        # 7b) Number of sections along beams and columns for N/V/M
+        n_sections_beam, n_sections_column = ask_member_sections()
+        set_member_sections(n_sections_beam, n_sections_column)
         ckpt.done("loads")
+
+    # sections also apply when the run is resumed from a later step
+    set_member_sections(n_sections_beam, n_sections_column)
 
 
     if ckpt.need("static"):
@@ -599,25 +633,42 @@ if __name__ == "__main__":
         all_drift_tables = []
         results_ok = []
         results_failed = []
+        _n_uls_plotted = 0
 
         for cname in names:
             print(f"\nRunning: {cname}")
             loads_combo = combos[cname]["loads"]
 
-            ops_build_model(
-                nodes,
-                elements,
-                Ec_Pa,
-                Es_Pa,
-                column_sec,
-                beam_sec,
-                geom=geom,
-                use_rigid_diaphragm=False,
-                walls=walls,
-                wall_tw_mm=wall_tw_mm,
-                wall_E_Pa=wall_E_Pa
-            )
+            def _build_static():
+                ops_build_model(
+                    nodes,
+                    elements,
+                    Ec_Pa,
+                    Es_Pa,
+                    column_sec,
+                    beam_sec,
+                    geom=geom,
+                    use_rigid_diaphragm=False,
+                    walls=walls,
+                    wall_tw_mm=wall_tw_mm,
+                    wall_E_Pa=wall_E_Pa
+                )
 
+            if is_group_combo(loads_combo):
+                # Range Add / Envelope groups: each load case analysed once, drifts superposed
+                per_U = node_disps_by_case(loads_combo, nodes, _build_static,
+                                           lambda L: ops_apply_combo_loads(nodes, elements, L), ops_run_static)
+                if per_U is None:
+                    print(f"❌ Failed: {cname}")
+                    results_failed.append(cname)
+                    continue
+                print(f"✔ Success: {cname}  (result-level combination: {loads_combo.describe()})")
+                results_ok.append(cname)
+                all_drift_tables.append(drifts_to_dataframe(story_drift_envelope(geom, nodes, per_U, loads_combo),
+                                                            cname))
+                continue
+
+            _build_static()
             ops_apply_combo_loads(nodes, elements, loads_combo)
 
             ok = ops_run_static()
@@ -635,7 +686,10 @@ if __name__ == "__main__":
             df = drifts_to_dataframe(drifts, cname)
             all_drift_tables.append(df)
 
-            if cname.startswith("ULS"):
+            if cname.startswith("ULS") and _n_uls_plotted < 8:
+                _n_uls_plotted += 1
+                if _n_uls_plotted == 8 and sum(str(n).startswith("ULS") for n in names) > 8:
+                    print("  (deformed shapes are plotted for the first 8 ULS combinations only)")
                 plot_deformed_shape(
                     geom,
                     nodes,
@@ -769,34 +823,43 @@ if __name__ == "__main__":
             cname = names[idx - 1]
             loads_combo = combos[cname]["loads"]
 
-            ops_build_model(
-                nodes,
-                elements,
-                Ec_Pa,
-                Es_Pa,
-                column_sec,
-                beam_sec,
-                geom=geom,
-                use_rigid_diaphragm=False,
-                walls=walls,
-                wall_tw_mm=wall_tw_mm,
-                wall_E_Pa=wall_E_Pa
-            )
-            ops_apply_combo_loads(nodes, elements, loads_combo)
-            ok = ops_run_static()
+            _env = nvm_envelope_for_combo(nodes, elements, loads_combo, Ec_Pa, Es_Pa, column_sec, beam_sec, geom,
+                                          ops_build_model, ops_apply_combo_loads, ops_run_static, walls=walls,
+                                          wall_tw_mm=wall_tw_mm, wall_E_Pa=wall_E_Pa, npts=60)
+            if _env is not None:      # Range Add / Envelope combination: one governing curve
+                plot_structure_NVM(nodes, elements, loads_combo, combo_name=cname, npts=60, geom=geom,
+                                   walls=walls, env=_env)
+                loads_combo = None
 
-            if ok == 0:
-                plot_structure_NVM(
-                    nodes,
-                    elements,
-                    loads_combo,
-                    combo_name=cname,
-                    npts=60,
-                    geom=geom,
-                    walls=walls,
-                )
-            else:
-                print("❌ Analysis failed for selected combination.")
+            if loads_combo is not None:
+              ops_build_model(
+                  nodes,
+                  elements,
+                  Ec_Pa,
+                  Es_Pa,
+                  column_sec,
+                  beam_sec,
+                  geom=geom,
+                  use_rigid_diaphragm=False,
+                  walls=walls,
+                  wall_tw_mm=wall_tw_mm,
+                  wall_E_Pa=wall_E_Pa
+              )
+              ops_apply_combo_loads(nodes, elements, loads_combo)
+              ok = ops_run_static()
+
+              if ok == 0:
+                  plot_structure_NVM(
+                      nodes,
+                      elements,
+                      loads_combo,
+                      combo_name=cname,
+                      npts=60,
+                      geom=geom,
+                      walls=walls,
+                  )
+              else:
+                  print("❌ Analysis failed for selected combination.")
 
         elif opt == "2":
             plot_all_combos_NVM(
@@ -824,14 +887,21 @@ if __name__ == "__main__":
         # 14) Linear dynamic analysis: masses + eigen + response spectrum + time history
         run_dynamics = _yn("\nGo to dynamic analysis now? (y/n): ")
         if run_dynamics == "y":
-            psi_mass_Q = _num(f"Mass live-load factor psi [recommended {PSI_Q2}]: ", float, default=PSI_Q2, min_val=0.0, max_val=1.0)
+            if load_groups:
+                psi_mass_Q = float(load_groups["psi_mass"])
+                print(f"Seismic mass: SW + G + {psi_mass_Q:g} x {load_groups.get('mass') or '-'} (defined with the load groups)")
+            else:
+                psi_mass_Q = _num(f"Mass live-load factor psi [recommended {PSI_Q2}]: ", float, default=PSI_Q2, min_val=0.0, max_val=1.0)
             extra_mass_floor = _num("Additional lumped mass per floor [kg] (0 if none): ", float, default=0.0, min_val=0.0)
 
             use_diaphragm = _yn("Use rigid diaphragm per floor? (y/n): ") == "y"
             crack_factor = _num("Cracked stiffness factor EI_eff/EI for seismic analyses (EC8 4.3.1(7)) [default 0.5]: ",
                                 float, default=0.5, min_val=0.1, max_val=1.0)
 
-            loads_for_mass = build_mass_loadset_from_cases(cases, psi_mass_Q=psi_mass_Q)
+            if load_groups and "SLS_quasi_perm" in combos:
+                loads_for_mass = list(combos["SLS_quasi_perm"]["loads"])   # SW + G + psi x mass group
+            else:
+                loads_for_mass = build_mass_loadset_from_cases(cases, psi_mass_Q=psi_mass_Q)
             floor_masses = compute_floor_masses_kg_from_line_loads(
                 geom,
                 nodes,
@@ -1264,13 +1334,18 @@ if __name__ == "__main__":
             # Cost is the primary objective; drift, EC2 member safety,
             # constructability and jacketing limits are constraints/penalties.
             drift_limit_ratio = 0.005
-            max_walls_per_layout = min(2, int(getattr(geom, "num_bays", 2)))
+            _nb = int(getattr(geom, "num_bays", 2))
+            max_walls_per_layout = min(2, _nb)
             wall_layout_mode = "hybrid"
             wall_thicknesses = [150.0, 200.0, 250.0, 300.0]
 
             # Runtime control: the user chooses how many screened wall layouts
             # enter the expensive global EC2 + jacketing stage. This prevents the
             # default run from becoming an exhaustive many-hour dataset run.
+            # Number of wall segments per layout: 2 by default; 3 widens the search for tall frames
+            # where two segments are not enough (the design space grows quickly).
+            max_walls_per_layout = _num(f"\nMax wall segments per layout (1-{min(3, _nb)}) [default {min(2, _nb)}]: ",
+                                        int, default=min(2, _nb), min_val=1, max_val=min(3, _nb))
             print("\n--- Wall search method ---")
             print("  1) Screening: rank all layouts with a quick drift check, then full check of the best N")
             print("  2) Smart: Bayesian optimization (TPE) - each new layout learns from all previous trials")

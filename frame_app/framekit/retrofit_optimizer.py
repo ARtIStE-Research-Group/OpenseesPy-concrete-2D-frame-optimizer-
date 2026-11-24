@@ -395,21 +395,39 @@ def run_static_drift_assessment(
 
         loads_combo = combos[cname]["loads"]
 
-        _call_build_model(
-            ops_build_model,
-            nodes=nodes,
-            elements=elements,
-            Ec_Pa=Ec_Pa,
-            Es_Pa=Es_Pa,
-            column_sec=column_sec,
-            beam_sec=beam_sec,
-            geom=geom,
-            use_rigid_diaphragm=use_rigid_diaphragm,
-            walls=walls,
-            wall_tw_mm=wall_tw_mm,
-            wall_E_Pa=wall_E_Pa,
-            element_sections=element_sections,
-        )
+        def _build():
+            _call_build_model(
+                ops_build_model,
+                nodes=nodes,
+                elements=elements,
+                Ec_Pa=Ec_Pa,
+                Es_Pa=Es_Pa,
+                column_sec=column_sec,
+                beam_sec=beam_sec,
+                geom=geom,
+                use_rigid_diaphragm=use_rigid_diaphragm,
+                walls=walls,
+                wall_tw_mm=wall_tw_mm,
+                wall_E_Pa=wall_E_Pa,
+                element_sections=element_sections,
+            )
+
+        from framekit.superposition import is_group_combo, node_disps_by_case, story_drift_envelope, _model_key
+        if is_group_combo(loads_combo):      # Range Add / Envelope: drifts superposed case by case
+            key = _model_key([id(nodes), id(elements), Ec_Pa, Es_Pa, column_sec, beam_sec, geom, use_rigid_diaphragm,
+                              list(walls or []), wall_tw_mm, wall_E_Pa, dict(element_sections or {}),
+                              "disp", id(ops_build_model)])
+            per_U = node_disps_by_case(loads_combo, nodes, _build,
+                                       lambda L: ops_apply_combo_loads(nodes, elements, L), ops_run_static,
+                                       model_key=key)
+            if per_U is None:
+                results_failed.append(cname)
+                continue
+            results_ok.append(cname)
+            all_drift_tables.append(drifts_to_dataframe(story_drift_envelope(geom, nodes, per_U, loads_combo), cname))
+            continue
+
+        _build()
         ops_apply_combo_loads(nodes, elements, loads_combo)
         ok = ops_run_static()
 

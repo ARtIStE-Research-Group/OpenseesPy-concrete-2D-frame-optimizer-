@@ -1,7 +1,8 @@
 import math
 
 from framekit.data_models import Load, Material
-from framekit.input_helpers import ask_choice, ask_float, ask_int, ask_yes_no, ask_element_ids
+from framekit.input_helpers import (ask_choice, ask_float, ask_int, ask_yes_no, ask_element_ids,
+                                   ask_float_def, ask_choice_def, ask_int_def, parse_id_list)
 from framekit.constants import G_STD
 
 
@@ -144,9 +145,109 @@ def compute_wall_self_weight(nodes, geom, walls, wall_tw_mm, wall_density_kgm3):
 
 # ============================================================
 # WIND LOAD
-# W+ : left exterior columns only, acting to the right
-# W- : right exterior columns only, acting to the left
+# W+ : wind from the left  -> windward = left exterior columns, acting to the right
+# W- : wind from the right -> windward = right exterior columns, acting to the left
+# Optional leeward load: the same storey values times a coefficient, applied at
+# the same time on the exterior columns of the other side, in the SAME direction
+# (suction on the leeward face pulls the frame the same way as the pressure).
 # ============================================================
+def build_storey_wind_column_loads(nodes, elements, geom, storey_values_kNpm, side, direction_sign):
+    """Uniform horizontal load on the exterior column(s) of each storey.
+
+    storey_values_kNpm[k] is the load on the column of storey k+1 (storey 1 =
+    ground storey) [kN/m, magnitude]; direction_sign = +1 to the right, -1 to the left.
+    """
+    loads = []
+    for story, q in enumerate(storey_values_kNpm, start=1):
+        if story > geom.num_floors or abs(q) < 1e-15:
+            continue
+        for eid in get_exterior_column_ids_by_story(nodes, elements, geom, story, side=side):
+            loads.append(Load("uniform", direction_sign * abs(q), element=eid, direction="horizontal"))
+    return loads
+
+
+def triangular_wind_storey_values(geom, top_wind_kNpm):
+    """Storey values of the previous triangular profile: value at mid-height of each storey."""
+    H = geom.num_floors * geom.floor_height
+    if H <= 1e-12:
+        return [0.0] * geom.num_floors
+    return [abs(top_wind_kNpm) * ((s - 0.5) * geom.floor_height / H) for s in range(1, geom.num_floors + 1)]
+
+
+def _ask_yes_no_def(prompt, default="n"):
+    return ask_choice_def(prompt, ["y", "n"], default=default) == "y"
+
+
+def _ask_wind_storey_values(case, geom):
+    vals = []
+    for s in range(1, geom.num_floors + 1):
+        where = " (ground storey)" if s == 1 else (" (top storey)" if s == geom.num_floors else "")
+        vals.append(ask_float(f"{case} distributed load on the storey {s} column{where} [kN/m] (0 if none): ",
+                              min_val=0.0))
+    return vals
+
+
+def _ask_leeward_coefficient(case, leeward_side):
+    if not _ask_yes_no_def(f"Apply at the same time on the {leeward_side} (leeward) exterior columns the same {case} "
+                           f"loads, in the same direction, multiplied by a coefficient? (y/n) [n]: ", "n"):
+        return 0.0
+    return ask_float_def("Leeward coefficient (leeward load = coefficient x windward load, e.g. 0.6): ",
+                         None, min_val=0.0)
+
+
+def _print_wind_table(case, geom, windward, coeff, windward_side, leeward_side):
+    print(f"\n{case}: storey loads [kN/m]  (windward = {windward_side} columns"
+          + (f", leeward = {leeward_side} columns x {coeff:g}" if coeff > 0 else "") + ")")
+    for s in range(geom.num_floors, 0, -1):
+        q = windward[s - 1]
+        line = f"  storey {s:2d}: windward {q:8.2f}"
+        if coeff > 0:
+            line += f"   leeward {coeff * q:8.2f}"
+        print(line)
+    tot = sum(windward) * geom.floor_height * (1.0 + coeff)
+    print(f"  total horizontal force: {tot:.1f} kN")
+
+
+def ask_wind_load_cases(nodes, elements, geom):
+    """Interactive definition of the wind cases W+ and W-; returns (loads_Wplus, loads_Wminus, info)."""
+    print("\n--- Wind load on the exterior columns ---")
+    print("W+ = wind from the left:  load on the left exterior columns, acting to the right.")
+    print("W- = wind from the right: load on the right exterior columns, acting to the left.")
+    print("Wind load profile:")
+    print("  1) one value per storey, from the ground storey up (uniform on each storey column)")
+    print("  2) triangular: 0 at the base, given value at the top (previous input)")
+    mode = ask_choice_def("Choose profile (1/2) [1]: ", ["1", "2"], default="1")
+
+    info = {"mode": "per_storey" if mode == "1" else "triangular"}
+    defs = {}
+    for case, side, other, sign in (("W+", "left", "right", +1), ("W-", "right", "left", -1)):
+        if case == "W-" and mode == "1" and any(abs(v) > 1e-15 for v in defs["W+"][0]):
+            if _ask_yes_no_def("Use the same storey loads (and leeward coefficient) for W-, mirrored? (y/n) [y]: ",
+                               "y"):
+                defs["W-"] = defs["W+"]
+                _print_wind_table(case, geom, defs[case][0], defs[case][1], side, other)
+                continue
+        if mode == "1":
+            vals = _ask_wind_storey_values(case, geom)
+        else:
+            top = ask_float(f"Top wind intensity for {case} [kN/m] (0 if none): ", min_val=0.0)
+            vals = triangular_wind_storey_values(geom, top)
+        coeff = _ask_leeward_coefficient(case, other) if any(abs(v) > 1e-15 for v in vals) else 0.0
+        defs[case] = (vals, coeff)
+        if any(abs(v) > 1e-15 for v in vals):
+            _print_wind_table(case, geom, vals, coeff, side, other)
+
+    out = {}
+    for case, side, other, sign in (("W+", "left", "right", +1), ("W-", "right", "left", -1)):
+        vals, coeff = defs[case]
+        loads = build_storey_wind_column_loads(nodes, elements, geom, vals, side, sign)
+        if coeff > 0:
+            loads += build_storey_wind_column_loads(nodes, elements, geom, [coeff * v for v in vals], other, sign)
+        out[case] = loads
+        info[case] = {"windward_storey_kNpm": list(vals), "leeward_coefficient": coeff}
+    return out["W+"], out["W-"], info
+
+
 def build_triangular_wind_column_loads(nodes, elements, geom, top_wind_kNpm, side, direction_sign):
     loads = []
     H = geom.num_floors * geom.floor_height
@@ -168,6 +269,86 @@ def build_triangular_wind_column_loads(nodes, elements, geom, top_wind_kNpm, sid
             loads.append(Load("uniform", q_story, element=eid, direction="horizontal"))
 
     return loads
+
+
+# ============================================================
+# LIVE (IMPOSED) LOAD CASES
+# Each case has a name, a uniform load and the beams it loads, chosen by
+# floor and bay; the cases are combined later by the load groups
+# (Linear Add, Range Add, Envelope).
+# ============================================================
+RESERVED_CASES = ("SW", "G", "Q", "W+", "W-", "E")
+
+
+def get_beam_id_at(nodes, elements, geom, level, bay):
+    """Beam of floor `level` (1..num_floors, roof = num_floors) in bay `bay` (1..num_bays)."""
+    beams = get_beam_element_ids_by_level(nodes, elements, geom, level)
+    beams = sorted(beams, key=lambda e: min(nodes[elements[e][0]][0], nodes[elements[e][1]][0]))
+    return beams[bay - 1] if 1 <= bay <= len(beams) else None
+
+
+def _clean_case_name(raw, default, taken):
+    name = "".join(ch if (ch.isalnum() or ch in "_-") else "_" for ch in raw.strip()) or default
+    if name.upper() in RESERVED_CASES:
+        name = name + "_live"
+    while name in taken:
+        name += "b"
+    return name
+
+
+def ask_live_load_cases(nodes, elements, geom, taken=()):
+    """Interactive live load cases: {name: [Load, ...]} in input order."""
+    print("\n--- Live (imposed) load cases ---")
+    print("Each case: a name, a uniform load [kN/m] and the beams it loads (by floor and bay).")
+    print("The cases are combined later with Linear Add, Range Add or Envelope.")
+    n = ask_int_def("Number of live load cases (0 = none) [0]: ", default=0, min_val=0)
+    floors = set(range(1, geom.num_floors + 1))
+    bays = set(range(1, geom.num_bays + 1))
+    out = {}
+    for k in range(1, n + 1):
+        default = f"live{k:02d}"
+        name = _clean_case_name(input(f"Live case {k} name [{default}]: "), default, set(taken) | set(out))
+        loads = []
+        while True:
+            q = ask_float(f"  {name}: load [kN/m] (magnitude, applied downward): ", min_val=0.0)
+            while True:
+                fl = parse_id_list(input(f"  {name}: floors (all | 1,3 | 1-3; roof = {geom.num_floors}) [all]: ")
+                                   or "all", floors)
+                if fl:
+                    break
+                print(f"  ❌ Choose floors between 1 and {geom.num_floors}.")
+            while True:
+                by = parse_id_list(input(f"  {name}: bays (all | 1,3 | 2-4) [all]: ") or "all", bays)
+                if by:
+                    break
+                print(f"  ❌ Choose bays between 1 and {geom.num_bays}.")
+            n_b = 0
+            for lv in fl:
+                for b in by:
+                    eid = get_beam_id_at(nodes, elements, geom, lv, b)
+                    if eid is not None and q > 0:
+                        loads.append(Load("uniform", -abs(q), element=eid, direction="vertical"))
+                        n_b += 1
+            print(f"  {name}: {q:g} kN/m on {n_b} beam(s) (floors {_ranges(fl)}, bays {_ranges(by)})")
+            if ask_choice_def(f"  Add more beams to {name} with another load? (y/n) [n]: ", ["y", "n"], "n") != "y":
+                break
+        out[name] = loads
+    return out
+
+
+def _ranges(ids):
+    ids = sorted(ids)
+    if not ids:
+        return "-"
+    parts, a, b = [], ids[0], ids[0]
+    for x in ids[1:]:
+        if x == b + 1:
+            b = x
+            continue
+        parts.append(f"{a}" if a == b else f"{a}-{b}")
+        a = b = x
+    parts.append(f"{a}" if a == b else f"{a}-{b}")
+    return ",".join(parts)
 
 
 # ============================================================
@@ -194,29 +375,14 @@ def ask_loads_by_cases(nodes, elements, geom):
             cases["G"].append(Load("uniform", q_roof, element=eid, direction="vertical"))
 
     # --------------------------------------------------------
-    # Wind loads asked separately
+    # Live load cases (combined later by the load groups)
     # --------------------------------------------------------
-    print("\n--- Automatic wind load on exterior columns ---")
-    print("W+ = left exterior columns only, acting to the right.")
-    print("W- = right exterior columns only, acting to the left.")
+    cases.update(ask_live_load_cases(nodes, elements, geom, taken=cases.keys()))
 
-    top_wind_plus = ask_float("Top wind intensity for W+ [kN/m] (0 if none): ", min_val=0.0)
-    if abs(top_wind_plus) > 1e-15:
-        cases["W+"] = build_triangular_wind_column_loads(
-            nodes, elements, geom,
-            top_wind_plus,
-            side="left",
-            direction_sign=+1
-        )
-
-    top_wind_minus = ask_float("Top wind intensity for W- [kN/m] (0 if none): ", min_val=0.0)
-    if abs(top_wind_minus) > 1e-15:
-        cases["W-"] = build_triangular_wind_column_loads(
-            nodes, elements, geom,
-            top_wind_minus,
-            side="right",
-            direction_sign=-1
-        )
+    # --------------------------------------------------------
+    # Wind loads (per storey or triangular, optional leeward part)
+    # --------------------------------------------------------
+    cases["W+"], cases["W-"], _wind_info = ask_wind_load_cases(nodes, elements, geom)
 
     # --------------------------------------------------------
     # Extra user loads

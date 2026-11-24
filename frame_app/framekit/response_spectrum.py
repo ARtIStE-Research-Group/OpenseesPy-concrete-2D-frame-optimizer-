@@ -22,6 +22,10 @@ class EC8SpectrumParams:
     direction: int = 1
     importance_factor: float = 1.0
     combo_method: str = "CQC"
+    standard: str = "EC8"          # "EC8" (EN 1998-1) or "NTC2008" (Italian NTC 2008, 3.2.3)
+    F0: float = 2.5                # NTC 2008: maximum amplification factor
+    Tc_star: float = 0.0           # NTC 2008: period of the start of the constant-velocity branch on rock
+    topography: str = "T1"         # NTC 2008: topographic category T1..T4
 
 
 @dataclass
@@ -49,6 +53,61 @@ EC8_SOIL_TABLE = {
 }
 
 
+# NTC 2008 (D.M. 14.01.2008), 3.2.3.2.1: stratigraphic and topographic amplification
+NTC2008_TOPOGRAPHY = {"T1": 1.0, "T2": 1.2, "T3": 1.2, "T4": 1.4}
+
+
+def ntc2008_soil_factors(soil: str, ag_g: float, F0: float, Tc_star: float) -> Tuple[float, float]:
+    """(Ss, Cc) of NTC 2008 Table 3.2.V for ground types A to E."""
+    soil = str(soil).upper()
+    x = F0 * ag_g
+    if soil == "A":
+        return 1.0, 1.0
+    if soil == "B":
+        return min(max(1.40 - 0.40 * x, 1.00), 1.20), 1.10 * Tc_star ** -0.20
+    if soil == "C":
+        return min(max(1.70 - 0.60 * x, 1.00), 1.50), 1.05 * Tc_star ** -0.33
+    if soil == "D":
+        return min(max(2.40 - 1.50 * x, 0.90), 1.80), 1.25 * Tc_star ** -0.50
+    if soil == "E":
+        return min(max(2.00 - 1.10 * x, 1.00), 1.60), 1.15 * Tc_star ** -0.40
+    raise ValueError(f"Unknown ground type {soil}")
+
+
+def spectrum_shape(rsa_params) -> Dict:
+    """S, TB, TC, TD and the plateau amplification F0 (2.5 for EN 1998-1) of the spectrum.
+
+    rsa_params: dict of ask_ec8_spectrum_params() or EC8SpectrumParams."""
+    get = (lambda k, d=None: rsa_params.get(k, d)) if isinstance(rsa_params, dict) else \
+        (lambda k, d=None: getattr(rsa_params, k, d))
+    if str(get("standard", "EC8")).upper() == "NTC2008":
+        ag_g = float(get("ag")) / G
+        F0 = float(get("F0"))
+        Tc_star = float(get("Tc_star"))
+        Ss, Cc = ntc2008_soil_factors(get("soil_class"), ag_g, F0, Tc_star)
+        ST = NTC2008_TOPOGRAPHY[str(get("topography", "T1")).upper()]
+        TC = Cc * Tc_star
+        return {"S": Ss * ST, "TB": TC / 3.0, "TC": TC, "TD": 4.0 * ag_g + 1.6, "F0": F0,
+                "Ss": Ss, "ST": ST, "Cc": Cc, "standard": "NTC2008"}
+    soil = dict(EC8_SOIL_TABLE[int(get("spectrum_type", 1))][str(get("soil_class")).upper()])
+    soil.update(F0=2.5, standard="EC8")
+    return soil
+
+
+def spectrum_label(rsa_params) -> str:
+    """One-line description of the spectrum for plots and reports."""
+    get = (lambda k, d=None: rsa_params.get(k, d)) if isinstance(rsa_params, dict) else \
+        (lambda k, d=None: getattr(rsa_params, k, d))
+    xi = 100 * float(get("damping_ratio", 0.05))
+    if str(get("standard", "EC8")).upper() == "NTC2008":
+        sh = spectrum_shape(rsa_params)
+        return (f"NTC 2008 · ground {str(get('soil_class')).upper()} · {str(get('topography', 'T1')).upper()} · "
+                f"ag = {float(get('ag')) / G:.4f} g · F0 = {float(get('F0')):.3f} · Tc* = {float(get('Tc_star')):.3f} s "
+                f"· S = {sh['S']:.3f} · ξ = {xi:.0f}%")
+    return (f"EN 1998-1 Type {get('spectrum_type')} · ground {str(get('soil_class')).upper()} · "
+            f"ag = {float(get('ag')) / G:.3f} g · ξ = {xi:.0f}% · γI = {float(get('importance_factor', 1.0)):.2f}")
+
+
 def damping_correction_eta(xi: float) -> float:
     xi_pct = 100.0 * xi
     eta = math.sqrt(10.0 / (5.0 + xi_pct))
@@ -56,26 +115,30 @@ def damping_correction_eta(xi: float) -> float:
 
 
 def ec8_elastic_spectrum_ordinate(T: float, params: EC8SpectrumParams) -> float:
-    soil = EC8_SOIL_TABLE[params.spectrum_type][params.soil_class.upper()]
+    """Elastic spectrum Se(T): EN 1998-1 3.2.2.2 (F0 = 2.5) or NTC 2008 3.2.3.2.1 (F0 given);
+    the two expressions have the same form."""
+    soil = spectrum_shape(params)
     S = soil["S"]
     TB = soil["TB"]
     TC = soil["TC"]
     TD = soil["TD"]
+    F0 = soil["F0"]
 
-    ag = params.ag * params.importance_factor
+    imp = params.importance_factor if soil["standard"] == "EC8" else 1.0
+    ag = params.ag * imp
     eta = damping_correction_eta(params.damping_ratio)
 
     if T < 0.0:
         raise ValueError("Period cannot be negative.")
 
     if T <= TB:
-        return ag * S * (1.0 + (T / TB) * (eta * 2.5 - 1.0))
+        return ag * S * (1.0 + (T / TB) * (eta * F0 - 1.0))
     elif T <= TC:
-        return ag * S * eta * 2.5
+        return ag * S * eta * F0
     elif T <= TD:
-        return ag * S * eta * 2.5 * (TC / T)
+        return ag * S * eta * F0 * (TC / T)
     else:
-        return ag * S * eta * 2.5 * (TC * TD / (T * T))
+        return ag * S * eta * F0 * (TC * TD / (T * T))
 
 
 def build_ec8_spectrum(periods: np.ndarray, params: EC8SpectrumParams) -> np.ndarray:
@@ -86,9 +149,28 @@ def build_ec8_spectrum(periods: np.ndarray, params: EC8SpectrumParams) -> np.nda
 
 
 def ask_ec8_spectrum_params() -> Dict:
-    print("\n--- EC8 Response Spectrum Input ---")
+    print("\n--- Response Spectrum Input ---")
 
     from framekit.input_helpers import ask_float_def, ask_int_def, ask_choice_def
+    std = ask_choice_def("Spectrum: 1) EN 1998-1   2) NTC 2008 (Italy) [1]: ", ["1", "2"], "1")
+    if std == "2":
+        print("NTC 2008, 3.2.3: give the site parameters for the limit state (e.g. SLV) of the building.")
+        ag_g = ask_float_def("ag/g on rock [e.g. 0.193493]: ", None, 0.0, 3.0)
+        F0 = ask_float_def("F0, maximum amplification factor [e.g. 2.443832]: ", None, 1.0, 5.0)
+        Tc_star = ask_float_def("Tc* [s] [e.g. 0.33327]: ", None, 0.01, 2.0)
+        soil_class = ask_choice_def("Ground type [A/B/C/D/E]: ", ["A", "B", "C", "D", "E"]).upper()
+        topo = ask_choice_def("Topographic category [T1/T2/T3/T4] (default T1): ",
+                              ["T1", "T2", "T3", "T4"], "T1").upper()
+        damping_ratio = ask_float_def("Damping ratio ξ as decimal [default 0.05]: ", 0.05, 0.0, 0.5)
+        print("Direction: X (in-plane horizontal) — the only horizontal direction of a 2D frame.")
+        combo_method = ask_choice_def("Modal combination [CQC/SRSS] (default CQC): ", ["CQC", "SRSS"], "CQC").upper()
+        out = {"standard": "NTC2008", "ag": ag_g * G, "F0": F0, "Tc_star": Tc_star, "topography": topo,
+               "soil_class": soil_class, "spectrum_type": 1, "damping_ratio": damping_ratio, "direction": 1,
+               "importance_factor": 1.0, "combo_method": combo_method}
+        sh = spectrum_shape(out)
+        print(f"NTC 2008 spectrum: Ss = {sh['Ss']:.3f}, ST = {sh['ST']:.2f}, S = {sh['S']:.3f}, Cc = {sh['Cc']:.3f}, "
+              f"TB = {sh['TB']:.3f} s, TC = {sh['TC']:.3f} s, TD = {sh['TD']:.3f} s")
+        return out
     ag_g = ask_float_def("Design ground acceleration ag/g [e.g. 0.35]: ", None, 0.0, 3.0)
     soil_class = ask_choice_def("Soil class [A/B/C/D/E]: ", ["A", "B", "C", "D", "E"]).upper()
     spectrum_type = ask_int_def("Spectrum type [1 or 2] (default 1): ", 1, 1, 2)
@@ -100,6 +182,7 @@ def ask_ec8_spectrum_params() -> Dict:
     combo_method = ask_choice_def("Modal combination [CQC/SRSS] (default CQC): ", ["CQC", "SRSS"], "CQC").upper()
 
     return {
+        "standard": "EC8",
         "ag": ag_g * G,
         "soil_class": soil_class,
         "spectrum_type": spectrum_type,
@@ -119,6 +202,10 @@ def _params_from_dict(rsa_params: Dict) -> EC8SpectrumParams:
         direction=rsa_params["direction"],
         importance_factor=rsa_params["importance_factor"],
         combo_method=rsa_params["combo_method"],
+        standard=rsa_params.get("standard", "EC8"),
+        F0=rsa_params.get("F0", 2.5),
+        Tc_star=rsa_params.get("Tc_star", 0.0),
+        topography=rsa_params.get("topography", "T1"),
     )
 
 
@@ -137,8 +224,7 @@ def build_ec8_plot_spectrum(
     npts: int = 600
 ) -> Tuple[np.ndarray, np.ndarray]:
     params = _params_from_dict(rsa_params)
-    soil = EC8_SOIL_TABLE[params.spectrum_type][params.soil_class.upper()]
-    TD = soil["TD"]
+    TD = spectrum_shape(rsa_params)["TD"]
 
     if t_max is None:
         t_max = max(4.0, 1.5 * TD)
@@ -164,14 +250,12 @@ def plot_ec8_spectrum(T: np.ndarray, Sa: np.ndarray, title: str = "EC8 Response 
     sub = []
     if rsa_params is not None:
         try:
-            prm = _params_from_dict(rsa_params)
-            soil = EC8_SOIL_TABLE[prm.spectrum_type][prm.soil_class.upper()]
+            soil = spectrum_shape(rsa_params)
             for key in ("TB", "TC", "TD"):
                 ax.axvline(soil[key], color="#AAAAAA", lw=0.9, ls="--", zorder=0)
                 ax.text(soil[key], max(Sa) * 1.04, key, ha="center",
                         va="bottom", fontsize=8.5, color=COLORS["muted"])
-            sub.append(f"Type {prm.spectrum_type} · ground {prm.soil_class.upper()} · "
-                       f"ag = {prm.ag / G:.3f} g · ξ = {100 * prm.damping_ratio:.0f}% · γI = {prm.importance_factor:.2f}")
+            sub.append(spectrum_label(rsa_params))
         except Exception:
             pass
     if periods is not None and len(periods):

@@ -183,17 +183,30 @@ def ask_seismic_settings(geom, walls, code_info: Dict, *, rsa_params=None, q_inf
 # SPECTRA
 # ============================================================
 def _soil(rsa_params):
-    from framekit.response_spectrum import EC8_SOIL_TABLE
-    return EC8_SOIL_TABLE[int(rsa_params["spectrum_type"])][str(rsa_params["soil_class"]).upper()]
+    from framekit.response_spectrum import spectrum_shape
+    return spectrum_shape(rsa_params)
 
 
 def design_spectrum_ordinate(T: float, rsa_params: Dict, q: float, beta: float = 0.2) -> float:
-    """EN 1998-1 3.2.2.5 design spectrum Sd(T) [m/s²]."""
+    """Design spectrum Sd(T) [m/s²]: EN 1998-1 3.2.2.5, or NTC 2008 3.2.3.5
+    (elastic spectrum with η = 1/q, and Sd ≥ 0.2·ag)."""
     s = _soil(rsa_params)
     S, TB, TC, TD = s["S"], s["TB"], s["TC"], s["TD"]
-    ag = float(rsa_params["ag"]) * float(rsa_params.get("importance_factor", 1.0))
     q = max(float(q), 1e-9)
     T = float(T)
+    if s.get("standard") == "NTC2008":
+        ag = float(rsa_params["ag"])
+        F0 = float(s["F0"])
+        if T <= TB:
+            v = ag * S * (1.0 + T / TB * (F0 / q - 1.0))
+        elif T <= TC:
+            v = ag * S * F0 / q
+        elif T <= TD:
+            v = ag * S * F0 / q * TC / T
+        else:
+            v = ag * S * F0 / q * TC * TD / (T * T)
+        return max(v, 0.2 * ag)
+    ag = float(rsa_params["ag"]) * float(rsa_params.get("importance_factor", 1.0))
     if T <= TB:
         return ag * S * (2.0 / 3.0 + T / TB * (2.5 / q - 2.0 / 3.0))
     if T <= TC:

@@ -1,12 +1,15 @@
 If you use this software in research or professional work, please cite the corresponding software release.
 
-Suggested citation (version 1.2.0):
-Marano, G. C., Hajiha, A. (2026).
-ARCOPY: seismic assessment and cost-based retrofit optimization of RC frames with OpenSeesPy (v1.2.0).
+Suggested citation (version 1.3.0):
+Hajiha, A., Marano, G. C., Bertagnoli, G., Sardone, L., Datta, G. (2026).
+ARCOPY: seismic assessment and cost-based retrofit optimization of RC frames with OpenSeesPy (v1.3.0).
 Software repository, ARTISTE Research Group, Politecnico di Torino. Zenodo.
-DOI: https://doi.org/10.5281/zenodo.23686655
+DOI (all versions, resolves to the latest release): https://doi.org/10.5281/zenodo.22812753
 
-Previous version (v1.0.0): https://doi.org/10.5281/zenodo.22812754
+Each release also has its own DOI, shown on the Zenodo page of the release:
+v1.3.0: https://doi.org/10.5281/zenodo.24494048
+v1.2.0: https://doi.org/10.5281/zenodo.23686655
+v1.0.0: https://doi.org/10.5281/zenodo.22812754
 
 Machine-readable citation metadata: CITATION.cff
 (GitHub shows it under "Cite this repository").

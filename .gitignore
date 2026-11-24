@@ -23,3 +23,10 @@ Thumbs.db
 /*.png
 !/arcopy_logo.png
 !/Logo_PoliTo_dal_2021_blu.png
+
+# runs of the examples and files written by the scripts
+/test_rc_portal/
+/example_4storey/
+/F[468]-[57]B_*/
+/examples/six_frames/logs/
+/verification/sap2000/six_frames_comparison/pairs_static.csv

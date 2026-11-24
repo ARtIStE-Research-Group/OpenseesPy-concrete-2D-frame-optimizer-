@@ -1,4 +1,4 @@
-# Conda environment for ARCOPY v1.2.0
+# Conda environment for ARCOPY v1.3.0
 #   conda env create -f environment.yml
 #   conda activate arcopy
 name: arcopy

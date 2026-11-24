@@ -68,6 +68,15 @@ check("Seismic mass roof (beams + half top columns) [kg]", fm[3], m_b + 0.5 * m_
 wl = compute_wall_self_weight(nodes, geom, [ShearWall(1, 2, 0, 1, tw_mm=200)], 200, 2500)
 check("Wall panel self-weight [kN]", -sum(L.value for L in wl), 2500 * g * 0.2 * 5 * 3 / 1000)
 
+# wind: one value per storey on the windward columns + leeward part (coefficient 0.5, same direction)
+from framekit.loads import build_storey_wind_column_loads  # noqa: E402
+wv = [6.0, 9.0, 12.0]
+wind = (build_storey_wind_column_loads(nodes, elems, geom, wv, "left", +1)
+        + build_storey_wind_column_loads(nodes, elems, geom, [0.5 * v for v in wv], "right", +1))
+solve_static(nodes, elems, wind, col, beam, geom)
+check("Wind per storey + leeward x0.5: total base shear [kN]",
+      -sum(ops.nodeReaction(n, 1) for n in base) / 1000, sum(wv) * 3.0 * 1.5)
+
 # ------------------------------------------------------------
 # 2) Single-span beams: loads, N/V/M diagrams
 # ------------------------------------------------------------
@@ -180,5 +189,28 @@ ops_run_static()
 r = _nvm_arrays_for_element(1, e1, swc, n1, npts=11)
 w_c = 2500 * g * (col.b_mm / 1000) * (col.h_mm / 1000) / 1000
 check("Column axial force varies with self-weight: N(top) - N(bottom) [kN]", (r[2][-1] - r[2][0]) / 1000, w_c * 3.0)
+
+# ------------------------------------------------------------
+# 7) NTC 2008 spectrum (3.2.3.2.1, 3.2.3.5) and gross-section stiffness option
+# ------------------------------------------------------------
+from framekit.response_spectrum import spectrum_shape, ec8_elastic_spectrum_ordinate, _params_from_dict
+from framekit.ec8_seismic import design_spectrum_ordinate
+from framekit.opensees_model import set_section_stiffness, section_properties_from_fiber
+ntc = {"standard": "NTC2008", "ag": 0.193493 * 9.81, "F0": 2.443832, "Tc_star": 0.33327, "topography": "T1",
+       "soil_class": "B", "spectrum_type": 1, "damping_ratio": 0.05, "direction": 1, "importance_factor": 1.0,
+       "combo_method": "CQC"}
+sh = spectrum_shape(ntc)
+# soil B: Ss = 1.40 - 0.40 F0 ag/g = 1.211 -> 1.20 (upper limit); Cc = 1.10 Tc*^-0.20; TC = Cc Tc*; TD = 4 ag/g + 1.6
+check("NTC 2008 soil B: S = Ss·ST (Ss limited to 1.20)", sh["S"], 1.20)
+check("NTC 2008 soil B: TC = 1.10·Tc*^0.80 [s]", sh["TC"], 1.10 * 0.33327 ** 0.80)
+check("NTC 2008: TD = 4 ag/g + 1.6 [s]", sh["TD"], 4 * 0.193493 + 1.6)
+check("NTC 2008 elastic plateau ag·S·η·F0 [m/s2]", ec8_elastic_spectrum_ordinate(0.3, _params_from_dict(ntc)),
+      0.193493 * 9.81 * 1.2 * 2.443832)
+check("NTC 2008 design spectrum, q = 1.5, T = 1.0 s: ag·S·F0/q·TC/T [m/s2]", design_spectrum_ordinate(1.0, ntc, 1.5),
+      0.193493 * 9.81 * 1.2 * 2.443832 / 1.5 * sh["TC"] / 1.0)
+set_section_stiffness("gross")
+A_g, I_g = section_properties_from_fiber(col, 30e9, 200e9)
+set_section_stiffness("transformed")
+check("Gross-section option: I = b·h³/12 [m4]", I_g, 0.4 * 0.4 ** 3 / 12)
 
 print("\n" + ("ALL CHECKS PASSED" if all(RESULTS) else f"{RESULTS.count(False)} CHECK(S) FAILED") + f"  ({len(RESULTS)} checks)")

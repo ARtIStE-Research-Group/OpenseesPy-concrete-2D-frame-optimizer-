@@ -666,6 +666,13 @@ def run_combo_and_check_all(
     wall_E_Pa=30e9,
     element_sections=None,
 ):
+    from framekit.superposition import is_group_combo
+    if is_group_combo(loads_combo):      # Range Add / Envelope: results superposed case by case
+        return _run_group_combo_and_check_all(
+            nodes, elements, loads_combo, Ec_Pa, Es_Pa, column_sec, beam_sec, ec2mat, ops_build_model,
+            ops_apply_combo_loads, ops_run_static, geom, use_rigid_diaphragm, walls, wall_tw_mm, wall_E_Pa,
+            element_sections)
+
     ops_build_model(
         nodes,
         elements,
@@ -717,6 +724,75 @@ def run_combo_and_check_all(
                                 MEd_sag_kNm=MEd_sag, MEd_hog_kNm=MEd_hog)
         }
 
+    return checks, 0
+
+
+def _run_group_combo_and_check_all(nodes, elements, gl, Ec_Pa, Es_Pa, column_sec, beam_sec, ec2mat,
+                                   ops_build_model, ops_apply_combo_loads, ops_run_static, geom,
+                                   use_rigid_diaphragm, walls, wall_tw_mm, wall_E_Pa, element_sections):
+    """EC2 checks of a result-level combination (Range Add / Envelope groups).
+
+    Every basic case is analysed once on the same model; end forces and span
+    moments are superposed into their maxima and minima (as in a SAP2000
+    envelope). The check uses the largest |N|, |V|, |M|, like the ordinary
+    combinations, and the N-M interaction of columns is checked with both the
+    most and the least compressive axial force.
+    """
+    from framekit.superposition import analyse_cases, envelope, _model_key
+    from framekit.diagrams import _nvm_arrays_for_element
+    from framekit.member_sections import get_member_sections
+
+    def build():
+        ops_build_model(nodes, elements, Ec_Pa, Es_Pa, column_sec, beam_sec, geom=geom,
+                        use_rigid_diaphragm=use_rigid_diaphragm, walls=walls, wall_tw_mm=wall_tw_mm,
+                        wall_E_Pa=wall_E_Pa, element_sections=element_sections)
+
+    def collect(case):
+        loads = gl.case_loads(case)
+        r = {}
+        for eid, (_, _, et) in elements.items():
+            lf = np.asarray(ops_ele_end_forces_local(eid), dtype=float)
+            M = None
+            if et == "beam":
+                res = _nvm_arrays_for_element(eid, elements, loads, nodes, npts=41)
+                M = np.asarray(res[4], dtype=float) / 1000.0 if res is not None else None
+            r[eid] = (lf, M)
+        return r
+
+    key = _model_key([id(nodes), id(elements), Ec_Pa, Es_Pa, column_sec, beam_sec, geom, use_rigid_diaphragm,
+                      list(walls or []), wall_tw_mm, wall_E_Pa, dict(element_sections or {}),
+                      get_member_sections(), id(ops_build_model)])
+    per = analyse_cases(gl, build, lambda L: ops_apply_combo_loads(nodes, elements, L), ops_run_static, collect,
+                        model_key=key)
+    if per is None:
+        return None, -1
+    cases = list(per)
+    checks = {}
+    for eid, (_, _, etype) in elements.items():
+        if element_sections is not None and int(eid) in element_sections:
+            sec = element_sections[int(eid)]
+        else:
+            sec = column_sec if etype == "column" else beam_sec
+        hi, lo = envelope(gl, {c: per[c][eid][0] for c in cases})
+        NEd = max(abs(hi[0]), abs(lo[0]), abs(hi[3]), abs(lo[3])) / 1000.0
+        VEd = max(abs(hi[1]), abs(lo[1]), abs(hi[4]), abs(lo[4])) / 1000.0
+        MEd = max(abs(hi[2]), abs(lo[2]), abs(hi[5]), abs(lo[5])) / 1000.0
+        N_comp = max(hi[0], -lo[3]) / 1000.0          # most compressive (compression +)
+        N_least = min(lo[0], -hi[3]) / 1000.0         # least compressive / most tensile
+        MEd_sag = MEd_hog = None
+        if etype == "beam" and all(per[c][eid][1] is not None for c in cases):
+            Mx, Mn = envelope(gl, {c: per[c][eid][1] for c in cases})
+            MEd_sag = max(float(np.max(Mx)), 0.0)
+            MEd_hog = max(float(-np.min(Mn)), 0.0)
+            MEd = max(MEd, MEd_sag, MEd_hog)
+        best = None
+        for Ns in ((N_comp,) if abs(N_comp - N_least) < 1e-9 else (N_comp, N_least)):
+            chk = ec2_check_element(sec, etype, ec2mat, NEd, VEd, MEd, NEd_signed_kN=Ns,
+                                    MEd_sag_kNm=MEd_sag, MEd_hog_kNm=MEd_hog)
+            if best is None or chk["eta"] > best[1]["eta"]:
+                best = (Ns, chk)
+        checks[eid] = {"etype": etype, "NEd_kN": NEd, "VEd_kN": VEd, "MEd_kNm": MEd,
+                       "NEd_signed_kN": best[0], **best[1]}
     return checks, 0
 
 

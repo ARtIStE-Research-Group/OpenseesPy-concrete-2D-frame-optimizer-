@@ -106,6 +106,11 @@ def _physics_seeds(geom, failed_stories, thicknesses, max_segments):
         seeds.append(params([(mid, 1, max(fs))]))
     if max_segments >= 2 and nb >= 2:
         seeds.append(params([(1, 1, nf), (nb, 1, nf)]))
+    if max_segments >= 3 and nb >= 3:
+        # three segments allowed (tall frames): full-height walls in the middle bay and its two neighbours,
+        # with the thinnest wall (stiffer walls attract a larger seismic force)
+        c = min(max(mid, 2), nb - 1)
+        seeds.append(_layout_params([(c - 1, 1, nf), (c, 1, nf), (c + 1, 1, nf)], float(min(thicknesses)), max_segments))
     # unique
     out, seen = [], set()
     for s in seeds:

@@ -17,12 +17,42 @@ def _get_sec_attr(sec, *names):
 
 
 # ============================================================
-# SECTION PROPERTIES (elastic transformed)
+# SECTION PROPERTIES (elastic transformed, or gross concrete)
 # returns A [m^2], I [m^4]
 # ============================================================
+# "transformed": concrete + bars with n = Es/Ec (default); "gross": concrete section b·h only,
+# as most commercial programs use by default (e.g. SAP2000), for comparisons between programs.
+_SECTION_STIFFNESS = {"mode": "transformed"}
+
+
+def set_section_stiffness(mode="transformed"):
+    mode = str(mode or "transformed").lower()
+    if mode not in ("transformed", "gross"):
+        raise ValueError("section stiffness must be 'transformed' or 'gross'")
+    _SECTION_STIFFNESS["mode"] = mode
+
+
+def get_section_stiffness():
+    return _SECTION_STIFFNESS["mode"]
+
+
+def ask_section_stiffness():
+    from framekit.input_helpers import ask_choice_def
+    print("\nSection stiffness of beams and columns in the analyses:")
+    print("  1) transformed section: concrete + longitudinal bars (n = Es/Ec)  [default]")
+    print("  2) gross concrete section b·h (e.g. to compare with programs that ignore the bars)")
+    v = ask_choice_def("Select (1/2) [1]: ", ["1", "2"], "1")
+    mode = "gross" if v == "2" else "transformed"
+    set_section_stiffness(mode)
+    print(f"Section stiffness: {mode}")
+    return mode
+
+
 def section_properties_from_fiber(sec, Ec_Pa, Es_Pa):
     b = _mm_to_m(_get_sec_attr(sec, "b", "b_mm"))
     h = _mm_to_m(_get_sec_attr(sec, "h", "h_mm"))
+    if _SECTION_STIFFNESS["mode"] == "gross":
+        return b * h, b * h ** 3 / 12.0
     cover = _mm_to_m(_get_sec_attr(sec, "cover", "cover_mm"))
 
     top_bars = int(_get_sec_attr(sec, "top_bars", "n_top"))

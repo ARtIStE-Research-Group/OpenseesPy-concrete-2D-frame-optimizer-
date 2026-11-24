@@ -13,6 +13,7 @@ import datetime as _dt
 from collections import OrderedDict
 
 import numpy as np
+from framekit.superposition import is_group_combo, analyse_cases, envelope
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
@@ -101,14 +102,29 @@ def _static_drift_profile(ctx, combos, names, walls, wall_tw_mm, element_section
     for cn in names:
         if str(cn).startswith("SEIS"):
             continue
-        ctx["ops_build_model"](ctx["nodes"], ctx["elements"], ctx["Ec_Pa"], ctx["Es_Pa"], ctx["column_sec"],
-                               ctx["beam_sec"], geom=geom, walls=walls, wall_tw_mm=wall_tw_mm,
-                               wall_E_Pa=ctx["wall_E_Pa"], element_sections=element_sections)
-        ctx["ops_apply_combo_loads"](ctx["nodes"], ctx["elements"], combos[cn]["loads"])
+        def _build():
+            ctx["ops_build_model"](ctx["nodes"], ctx["elements"], ctx["Ec_Pa"], ctx["Es_Pa"], ctx["column_sec"],
+                                   ctx["beam_sec"], geom=geom, walls=walls, wall_tw_mm=wall_tw_mm,
+                                   wall_E_Pa=ctx["wall_E_Pa"], element_sections=element_sections)
+
+        def _floor_u():
+            return np.array([np.mean([ops.nodeDisp(node_id_at(geom, s, ix), 1) for ix in range(geom.num_bays + 1)])
+                             for s in range(geom.num_floors + 1)])
+
+        gl = combos[cn]["loads"]
+        if is_group_combo(gl):        # Range Add / Envelope: storey drifts superposed case by case
+            per = analyse_cases(gl, _build, lambda L: ctx["ops_apply_combo_loads"](ctx["nodes"], ctx["elements"], L),
+                                ctx["ops_run_static"], lambda case: np.diff(_floor_u()))
+            if per is None:
+                continue
+            hi, lo = envelope(gl, per)
+            out = np.maximum(out, np.maximum(np.abs(hi), np.abs(lo)) / geom.floor_height)
+            continue
+        _build()
+        ctx["ops_apply_combo_loads"](ctx["nodes"], ctx["elements"], gl)
         if ctx["ops_run_static"]() != 0:
             continue
-        u = [np.mean([ops.nodeDisp(node_id_at(geom, s, ix), 1) for ix in range(geom.num_bays + 1)])
-             for s in range(geom.num_floors + 1)]
+        u = _floor_u()
         d = np.abs(np.diff(u)) / geom.floor_height
         out = np.maximum(out, d)
     return out
@@ -121,21 +137,40 @@ def _nvm_envelopes(ctx, combos, names, walls, wall_tw_mm, element_sections, npts
     for cn in names:
         if not str(cn).startswith(("ULS", "SEIS")):
             continue
+        gl = combos[cn]["loads"]
+        if is_group_combo(gl):        # Range Add / Envelope: N/V/M superposed case by case
+            from framekit.diagrams import nvm_envelope_for_combo
+            genv = nvm_envelope_for_combo(ctx["nodes"], ctx["elements"], gl, ctx["Ec_Pa"], ctx["Es_Pa"],
+                                          ctx["column_sec"], ctx["beam_sec"], ctx["geom"], ctx["ops_build_model"],
+                                          ctx["ops_apply_combo_loads"], ctx["ops_run_static"], walls=walls,
+                                          wall_tw_mm=wall_tw_mm, wall_E_Pa=ctx["wall_E_Pa"],
+                                          element_sections=element_sections, npts=npts)
+            for eid, (xg, yg, Nt, Vt, Mt, L, c, s) in (genv or {}).items():
+                n = len(Nt[0])
+                e = env.setdefault(eid, {"x": np.linspace(0, L, n), "geo": (xg, yg, c, s), "L": L,
+                                         "Nmax": np.full(n, -np.inf), "Nmin": np.full(n, np.inf),
+                                         "Vmax": np.full(n, -np.inf), "Vmin": np.full(n, np.inf),
+                                         "Mmax": np.full(n, -np.inf), "Mmin": np.full(n, np.inf)})
+                for k, (hi, lo) in (("N", Nt), ("V", Vt), ("M", Mt)):
+                    e[k + "max"] = np.maximum(e[k + "max"], np.asarray(hi) / 1000.0)
+                    e[k + "min"] = np.minimum(e[k + "min"], np.asarray(lo) / 1000.0)
+            continue
         ctx["ops_build_model"](ctx["nodes"], ctx["elements"], ctx["Ec_Pa"], ctx["Es_Pa"], ctx["column_sec"],
                                ctx["beam_sec"], geom=ctx["geom"], walls=walls, wall_tw_mm=wall_tw_mm,
                                wall_E_Pa=ctx["wall_E_Pa"], element_sections=element_sections)
-        ctx["ops_apply_combo_loads"](ctx["nodes"], ctx["elements"], combos[cn]["loads"])
+        ctx["ops_apply_combo_loads"](ctx["nodes"], ctx["elements"], gl)
         if ctx["ops_run_static"]() != 0:
             continue
         for eid in ctx["elements"]:
-            r = _nvm_arrays_for_element(eid, ctx["elements"], combos[cn]["loads"], ctx["nodes"], npts=npts)
+            r = _nvm_arrays_for_element(eid, ctx["elements"], gl, ctx["nodes"], npts=npts)
             if r is None:
                 continue
             xg, yg, N, V, M, L, c, s = r
-            e = env.setdefault(eid, {"x": np.linspace(0, L, npts), "geo": (xg, yg, c, s), "L": L,
-                                     "Nmax": np.full(npts, -np.inf), "Nmin": np.full(npts, np.inf),
-                                     "Vmax": np.full(npts, -np.inf), "Vmin": np.full(npts, np.inf),
-                                     "Mmax": np.full(npts, -np.inf), "Mmin": np.full(npts, np.inf)})
+            n = len(N)          # sections of this member (beams and columns can differ)
+            e = env.setdefault(eid, {"x": np.linspace(0, L, n), "geo": (xg, yg, c, s), "L": L,
+                                     "Nmax": np.full(n, -np.inf), "Nmin": np.full(n, np.inf),
+                                     "Vmax": np.full(n, -np.inf), "Vmin": np.full(n, np.inf),
+                                     "Mmax": np.full(n, -np.inf), "Mmin": np.full(n, np.inf)})
             for k, arr in (("N", N), ("V", V), ("M", M)):
                 a = np.asarray(arr) / 1000.0
                 e[k + "max"] = np.maximum(e[k + "max"], a)
@@ -761,8 +796,9 @@ def export_retrofit_report_v2(**ctx):
             if (ctx.get("code_info") or {}).get("knowledge_level") else "")),
     ]
     if seis:
-        summary += [("Seismic action", f"ag = {seis['rsa_params']['ag'] / 9.81:.3f} g, ground {seis['rsa_params']['soil_class']}, "
-                                       f"type {seis['rsa_params']['spectrum_type']}, q = {seis['q']:.2f}, EI factor {seis['stiffness_factor']:.2f}")]
+        from framekit.response_spectrum import spectrum_label
+        summary += [("Seismic action", f"{spectrum_label(seis['rsa_params'])}, q = {seis['q']:.2f}, "
+                                       f"EI factor {seis['stiffness_factor']:.2f}")]
     summary += [
         ("Members with η > 1", f"{n_fail_b} before → {n_fail_a} after walls → {n_fail_f} final"),
         ("Max utilization η", f"{_fmt(max(eb.values()) if eb else np.nan)} → {_fmt(max(eta_f.values()) if eta_f else np.nan)}"),
