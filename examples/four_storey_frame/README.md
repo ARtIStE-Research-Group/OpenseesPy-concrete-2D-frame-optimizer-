@@ -1,6 +1,6 @@
 # Example: 4-storey, 5-bay RC frame
 
-This is the frame used in the ARCOPY paper. `inputs.txt` holds the answers to all 64 prompts, so the whole workflow (model → static → EC2 → modal → EC8 RSA → performance summary → smart retrofit search → selected strategy → report) runs without typing.
+This is the example frame of ARCOPY v1.2.0 (the paper now uses the frames of `examples/six_frames`). `inputs.txt` holds the answers to all 74 prompts, so the whole workflow (model → static → EC2 → modal → EC8 RSA → performance summary → smart retrofit search → selected strategy → report) runs without typing.
 
 ## Frame and actions
 
@@ -41,7 +41,7 @@ The run takes about 2 minutes on a laptop.
 | Jacketing | 22 members (20 beams and 2 columns), η max after retrofit 0.98 |
 | Total cost | 53,652 EUR (walls 19,015 + jacketing 34,637) |
 
-The search uses a fixed seed (42), so the same Optuna version gives the same trials. The files in `reference_results/` were produced by this input with ARCOPY v1.2.0 (Python 3.13, Optuna 5.0, OpenSeesPy 3.8):
+The search uses a fixed seed (42), so the same Optuna version gives the same trials. The files in `reference_results/` were produced by this input with ARCOPY v1.2.0 (Python 3.13, Optuna 5.0, OpenSeesPy 3.8); v1.3.0 gives the same results:
 
 - `smart_search_history.csv`: every trial with layout, cost, feasibility, source and best cost so far;
 - `retrofit_global_optimization.csv`, `retrofit_top5_alternatives.csv`: all analysed strategies and the 5 cheapest;
@@ -50,7 +50,7 @@ The search uses a fixed seed (42), so the same Optuna version gives the same tri
 - `report/retrofit_report.docx` and `report/retrofit_report_data.xlsx`: the retrofit report;
 - `report/figures/`: learning curve, search map and selected layout.
 
-## The 64 answers
+## The 74 answers
 
 | # | Prompt | Answer |
 |---|---|---|
@@ -76,45 +76,55 @@ The search uses a fixed seed (42), so the same Optuna version gives the same tri
 | 20 | Plot selected RC beam/column sections? (y/n) [y]: | `n` |
 | 21 | Concrete E [MPa]: | `30000` |
 | 22 | Concrete density [kg/m3]: | `2500` |
-| 23 | G distributed load on floor 1 [kN/m] (magnitude, applied downward): | `35` |
-| 24 | G distributed load on floor 2 [kN/m] (magnitude, applied downward): | `35` |
-| 25 | G distributed load on floor 3 [kN/m] (magnitude, applied downward): | `35` |
-| 26 | G distributed load on roof [kN/m] (magnitude, applied downward): | `30` |
-| 27 | Top wind intensity for W+ [kN/m] (0 if none): | `10` |
-| 28 | Top wind intensity for W- [kN/m] (0 if none): | `10` |
-| 29 | Add extra load? (y/n): | `n` |
-| 30 | Run EC2 checks for ULS combinations? (y/n): | `y` |
-| 31 | Show colored verification table? (y/n): | `n` |
-| 32 | Show utilization colored on structure? (y/n): | `n` |
-| 33 | Select option (1/2/3): | `3` |
-| 34 | Go to dynamic analysis now? (y/n): | `y` |
-| 35 | Mass live-load factor psi [recommended 0.3]: | (Enter = default) |
-| 36 | Additional lumped mass per floor [kg] (0 if none): | `0` |
-| 37 | Use rigid diaphragm per floor? (y/n): | `n` |
-| 38 | Cracked stiffness factor EI_eff/EI for seismic analyses (EC8 4.3.1(7)) [default 0.5]: | (Enter = default) |
-| 39 | Number of eigen modes to compute [max 72]: | `6` |
-| 40 | Plot floor mode-shape curves? (y/n): | `n` |
-| 41 | Plot full deformed structure for each mode? (y/n): | `n` |
-| 42 | Run EC8 response spectrum analysis (design spectrum, q-factor)? (y/n): | `y` |
-| 43 | Design ground acceleration ag/g [e.g. 0.35]: | `0.25` |
-| 44 | Soil class [A/B/C/D/E]: | `B` |
-| 45 | Spectrum type [1 or 2] (default 1): | `1` |
-| 46 | Damping ratio ξ as decimal [default 0.05]: | `0.05` |
-| 47 | Importance factor γI [default 1.0]: | `1` |
-| 48 | Modal combination [CQC/SRSS] (default CQC): | `CQC` |
-| 49 | Behaviour factor q [default 1.50]: | (Enter = default) |
-| 50 | Plot EC8 spectrum? (y/n): | `n` |
-| 51 | Select (1/2/3) [1]: | `1` |
-| 52 | Reduction factor ν [default 0.50 (importance I-II), 0.40 for III-IV]: | (Enter = default) |
-| 53 | Run linear time-history analysis? (y/n): | `n` |
-| 54 | Build global performance summary (static + RSA + TH)? (y/n): | `y` |
-| 55 | Run retrofit optimization? (y/n): | `y` |
-| 56 | Choose search method [default 2]: | `2` |
-| 57 | Number of smart trials (complete strategies) [default 60]: | `40` |
-| 58 | Use default retrofit cost parameters? (y/n) [y]: | (Enter = default) |
-| 59 | Max ratio jacketed / original section dimension [default 1.5]: | (Enter = default) |
-| 60 | Max jacket thickness [mm] [default 200]: | (Enter = default) |
-| 61 | Include the EC8 seismic action in the retrofit (lateral force method per candidate)? (y/n) [y]: | (Enter = default) |
-| 62 | Use the seismic parameters of the RSA step (q = 1.50, ag = 0.250 g)? (y/n) [y]: | (Enter = default) |
-| 63 | Plot before/after RC sections for jacketed members? (y/n) [y]: | (Enter = default) |
-| 64 | Generate the retrofit report (Word + Excel)? (y/n) [y]: | (Enter = default) |
+| 23 | Select (1/2) [1]: | (Enter = default) |
+| 24 | G distributed load on floor 1 [kN/m] (magnitude, applied downward): | `35` |
+| 25 | G distributed load on floor 2 [kN/m] (magnitude, applied downward): | `35` |
+| 26 | G distributed load on floor 3 [kN/m] (magnitude, applied downward): | `35` |
+| 27 | G distributed load on roof [kN/m] (magnitude, applied downward): | `30` |
+| 28 | Number of live load cases (0 = none) [0]: | (Enter = default) |
+| 29 | Choose profile (1/2) [1]: | `2` (triangular, as in v1.2.0) |
+| 30 | Top wind intensity for W+ [kN/m] (0 if none): | `10` |
+| 31 | Apply at the same time on the right (leeward) exterior columns the same W+ loads, in the same direction, multiplied by a coefficient? (y/n) [n]: | `n` |
+| 32 | Top wind intensity for W- [kN/m] (0 if none): | `10` |
+| 33 | Apply at the same time on the left (leeward) exterior columns the same W- loads, in the same direction, multiplied by a coefficient? (y/n) [n]: | `n` |
+| 34 | Add extra load? (y/n): | `n` |
+| 35 | Add another load combination of your own? (y/n) [n]: | (Enter = default) |
+| 36 | Number of sections along each BEAM [Enter = built-in]: | (Enter = default) |
+| 37 | Number of sections along each COLUMN [Enter = built-in]: | (Enter = default) |
+| 38 | Run EC2 checks for ULS combinations? (y/n): | `y` |
+| 39 | Show colored verification table? (y/n): | `n` |
+| 40 | Show utilization colored on structure? (y/n): | `n` |
+| 41 | Select option (1/2/3): | `3` |
+| 42 | Go to dynamic analysis now? (y/n): | `y` |
+| 43 | Mass live-load factor psi [recommended 0.3]: | (Enter = default) |
+| 44 | Additional lumped mass per floor [kg] (0 if none): | `0` |
+| 45 | Use rigid diaphragm per floor? (y/n): | `n` |
+| 46 | Cracked stiffness factor EI_eff/EI for seismic analyses (EC8 4.3.1(7)) [default 0.5]: | (Enter = default) |
+| 47 | Number of eigen modes to compute [max 72]: | `6` |
+| 48 | Plot floor mode-shape curves? (y/n): | `n` |
+| 49 | Plot full deformed structure for each mode? (y/n): | `n` |
+| 50 | Run EC8 response spectrum analysis (design spectrum, q-factor)? (y/n): | `y` |
+| 51 | Spectrum: 1) EN 1998-1   2) NTC 2008 (Italy) [1]: | (Enter = default) |
+| 52 | Design ground acceleration ag/g [e.g. 0.35]: | `0.25` |
+| 53 | Soil class [A/B/C/D/E]: | `B` |
+| 54 | Spectrum type [1 or 2] (default 1): | `1` |
+| 55 | Damping ratio ξ as decimal [default 0.05]: | `0.05` |
+| 56 | Importance factor γI [default 1.0]: | `1` |
+| 57 | Modal combination [CQC/SRSS] (default CQC): | `CQC` |
+| 58 | Behaviour factor q [default 1.50]: | (Enter = default) |
+| 59 | Plot EC8 spectrum? (y/n): | `n` |
+| 60 | Select (1/2/3) [1]: | `1` |
+| 61 | Reduction factor ν [default 0.50 (importance I-II), 0.40 for III-IV]: | (Enter = default) |
+| 62 | Run linear time-history analysis? (y/n): | `n` |
+| 63 | Build global performance summary (static + RSA + TH)? (y/n): | `y` |
+| 64 | Run retrofit optimization? (y/n): | `y` |
+| 65 | Max wall segments per layout (1-3) [default 2]: | (Enter = default) |
+| 66 | Choose search method [default 2]: | `2` |
+| 67 | Number of smart trials (complete strategies) [default 60]: | `40` |
+| 68 | Use default retrofit cost parameters? (y/n) [y]: | (Enter = default) |
+| 69 | Max ratio jacketed / original section dimension [default 1.5]: | (Enter = default) |
+| 70 | Max jacket thickness [mm] [default 200]: | (Enter = default) |
+| 71 | Include the EC8 seismic action in the retrofit (lateral force method per candidate)? (y/n) [y]: | (Enter = default) |
+| 72 | Use the seismic parameters of the RSA step (q = 1.50, ag = 0.250 g)? (y/n) [y]: | (Enter = default) |
+| 73 | Plot before/after RC sections for jacketed members? (y/n) [y]: | (Enter = default) |
+| 74 | Generate the retrofit report (Word + Excel)? (y/n) [y]: | (Enter = default) |
